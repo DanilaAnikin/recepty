@@ -11,6 +11,8 @@ if [[ ! -x "${FLUTTER_BIN}" ]]; then
   bash scripts/vercel_install_flutter.sh
 fi
 
+git config --global --add safe.directory "${FLUTTER_ROOT}" || true
+
 export PATH="${FLUTTER_ROOT}/bin:${PATH}"
 
 flutter config --enable-web
