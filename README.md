@@ -1,4 +1,4 @@
-# TeriProjekt
+# Recepty Terinky
 
 Flutter project bootstrap prepared on Linux for Android, Web and later iOS builds in Codemagic.
 

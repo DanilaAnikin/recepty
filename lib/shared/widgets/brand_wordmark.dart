@@ -1,0 +1,24 @@
+import 'package:flutter/material.dart';
+
+class BrandWordmark extends StatelessWidget {
+  const BrandWordmark({
+    super.key,
+    this.height = 52,
+    this.alignment = Alignment.centerLeft,
+  });
+
+  final double height;
+  final Alignment alignment;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: alignment,
+      child: Image.asset(
+        'assets/branding/logo_wordmark.png',
+        height: height,
+        fit: BoxFit.contain,
+      ),
+    );
+  }
+}

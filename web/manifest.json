@@ -1,11 +1,11 @@
 {
-    "name": "teriprojekt",
-    "short_name": "teriprojekt",
+    "name": "Recepty Terinky",
+    "short_name": "Recepty Terinky",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Recepty Terinky",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

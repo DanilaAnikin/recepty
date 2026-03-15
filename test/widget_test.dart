@@ -1,30 +1,53 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:teriprojekt/main.dart';
+import 'package:teriprojekt/core/constants/app_units.dart';
+import 'package:teriprojekt/core/utils/text_normalizer.dart';
+import 'package:teriprojekt/data/models/recipe_entity.dart';
+import 'package:teriprojekt/features/recipes/application/recipe_matcher.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  test('text normalizer removes diacritics and extra spaces', () {
+    expect(TextNormalizer.normalize('  Kureci   prsa  '), 'kureci prsa');
+    expect(TextNormalizer.normalize('Červená cibule'), 'cervena cibule');
+  });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+  test('recipe matcher returns full match only when all ingredients are selected', () {
+    final recipe = RecipeEntity()
+      ..title = 'Test'
+      ..normalizedTitle = 'test'
+      ..description = ''
+      ..cookingCount = 0
+      ..createdAt = DateTime(2026)
+      ..updatedAt = DateTime(2026)
+      ..ingredients = [
+        RecipeIngredientEmbedded()
+          ..ingredientId = 1
+          ..ingredientNameSnapshot = 'Mouka'
+          ..normalizedIngredientName = 'mouka'
+          ..amount = 100
+          ..unit = IngredientUnit.g,
+        RecipeIngredientEmbedded()
+          ..ingredientId = 2
+          ..ingredientNameSnapshot = 'Mleko'
+          ..normalizedIngredientName = 'mleko'
+          ..amount = 200
+          ..unit = IngredientUnit.ml,
+      ];
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    final full = RecipeMatcher.evaluate(
+      recipe: recipe,
+      selectedIngredientIds: {1, 2},
+      query: '',
+      mode: RecipeMatchMode.full,
+    );
+    final partial = RecipeMatcher.evaluate(
+      recipe: recipe,
+      selectedIngredientIds: {1},
+      query: '',
+      mode: RecipeMatchMode.partial,
+    );
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(full.matches, isTrue);
+    expect(partial.matches, isTrue);
+    expect(partial.missingIngredients, ['Mleko']);
   });
 }
