@@ -19,18 +19,20 @@ void main() {
       ..createdAt = DateTime(2026)
       ..updatedAt = DateTime(2026)
       ..ingredients = [
-        RecipeIngredientEmbedded()
-          ..ingredientId = 1
-          ..ingredientNameSnapshot = 'Mouka'
-          ..normalizedIngredientName = 'mouka'
-          ..amount = 100
-          ..unit = IngredientUnit.g,
-        RecipeIngredientEmbedded()
-          ..ingredientId = 2
-          ..ingredientNameSnapshot = 'Mleko'
-          ..normalizedIngredientName = 'mleko'
-          ..amount = 200
-          ..unit = IngredientUnit.ml,
+        RecipeIngredientEmbedded(
+          ingredientId: 1,
+          ingredientNameSnapshot: 'Mouka',
+          normalizedIngredientName: 'mouka',
+          amount: 100,
+          unit: IngredientUnit.g,
+        ),
+        RecipeIngredientEmbedded(
+          ingredientId: 2,
+          ingredientNameSnapshot: 'Mleko',
+          normalizedIngredientName: 'mleko',
+          amount: 200,
+          unit: IngredientUnit.ml,
+        ),
       ];
 
     final full = RecipeMatcher.evaluate(

@@ -1,11 +1,9 @@
-import 'package:isar/isar.dart';
-
-part 'app_settings_entity.g.dart';
-
-@collection
 class AppSettingsEntity {
-  AppSettingsEntity();
+  AppSettingsEntity({
+    this.id = 1,
+    this.seedVersionApplied = 0,
+  });
 
-  Id id = 1;
-  int seedVersionApplied = 0;
+  int id;
+  int seedVersionApplied;
 }

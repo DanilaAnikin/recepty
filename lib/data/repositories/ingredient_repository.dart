@@ -1,19 +1,21 @@
-import 'package:isar/isar.dart';
+import 'package:sembast/sembast.dart';
 
 import '../../core/utils/text_normalizer.dart';
+import '../db/app_database.dart';
 import '../models/ingredient_entity.dart';
-import '../models/pantry_selection_entity.dart';
 
 class IngredientRepository {
-  const IngredientRepository(this._isar);
+  const IngredientRepository(this._db);
 
-  final Isar _isar;
+  final Database _db;
 
   Stream<List<IngredientEntity>> watchAll() {
-    return _isar.ingredientEntitys.where().watch(fireImmediately: true).map((items) {
-      final sorted = [...items];
-      sorted.sort((a, b) => a.normalizedName.compareTo(b.normalizedName));
-      return sorted;
+    return ingredientsStore.query().onSnapshots(_db).map((snapshots) {
+      final items = snapshots
+          .map((snapshot) => IngredientEntity.fromMap(snapshot.value, snapshot.key))
+          .toList();
+      items.sort((a, b) => a.normalizedName.compareTo(b.normalizedName));
+      return items;
     });
   }
 
@@ -21,13 +23,22 @@ class IngredientRepository {
     if (ids.isEmpty) {
       return [];
     }
-    return _isar.ingredientEntitys.getAll(ids.toList()).then(
-          (items) => items.whereType<IngredientEntity>().toList(),
-        );
+    final snapshots = await ingredientsStore.find(_db);
+    return snapshots
+        .map((snapshot) => IngredientEntity.fromMap(snapshot.value, snapshot.key))
+        .where((item) => ids.contains(item.id))
+        .toList();
   }
 
-  Future<IngredientEntity?> getByNormalizedName(String normalizedName) {
-    return _isar.ingredientEntitys.filter().normalizedNameEqualTo(normalizedName).findFirst();
+  Future<IngredientEntity?> getByNormalizedName(String normalizedName) async {
+    final snapshot = await ingredientsStore.findFirst(
+      _db,
+      finder: Finder(filter: Filter.equals('normalizedName', normalizedName)),
+    );
+    if (snapshot == null) {
+      return null;
+    }
+    return IngredientEntity.fromMap(snapshot.value, snapshot.key);
   }
 
   Future<IngredientEntity> create({
@@ -37,22 +48,22 @@ class IngredientRepository {
     final normalizedName = TextNormalizer.normalize(name);
     final existing = await getByNormalizedName(normalizedName);
     if (existing != null) {
-      throw const IngredientRepositoryException('Ingredience se stejnym nazvem uz existuje.');
+      throw const IngredientRepositoryException('Ingredience se stejným názvem už existuje.');
     }
 
-    final entity = IngredientEntity()
-      ..name = name.trim()
-      ..normalizedName = normalizedName
-      ..firstLetter = TextNormalizer.firstLetter(name)
-      ..isFavorite = false
-      ..isSystem = isSystem
-      ..createdAt = DateTime.now()
-      ..updatedAt = DateTime.now();
+    final now = DateTime.now();
+    final entity = IngredientEntity(
+      normalizedName: normalizedName,
+      name: name.trim(),
+      firstLetter: TextNormalizer.firstLetter(name),
+      isFavorite: false,
+      isSystem: isSystem,
+      createdAt: now,
+      updatedAt: now,
+    );
 
-    await _isar.writeTxn(() async {
-      await _isar.ingredientEntitys.put(entity);
-    });
-
+    final id = await ingredientsStore.add(_db, entity.toMap());
+    entity.id = id;
     return entity;
   }
 
@@ -63,7 +74,7 @@ class IngredientRepository {
     final normalizedName = TextNormalizer.normalize(name);
     final existing = await getByNormalizedName(normalizedName);
     if (existing != null && existing.id != entity.id) {
-      throw const IngredientRepositoryException('Ingredience se stejnym nazvem uz existuje.');
+      throw const IngredientRepositoryException('Ingredience se stejným názvem už existuje.');
     }
 
     entity
@@ -72,10 +83,7 @@ class IngredientRepository {
       ..firstLetter = TextNormalizer.firstLetter(name)
       ..updatedAt = DateTime.now();
 
-    await _isar.writeTxn(() async {
-      await _isar.ingredientEntitys.put(entity);
-    });
-
+    await ingredientsStore.record(entity.id).put(_db, entity.toMap());
     return entity;
   }
 
@@ -83,20 +91,20 @@ class IngredientRepository {
     entity
       ..isFavorite = !entity.isFavorite
       ..updatedAt = DateTime.now();
-
-    await _isar.writeTxn(() async {
-      await _isar.ingredientEntitys.put(entity);
-    });
+    await ingredientsStore.record(entity.id).put(_db, entity.toMap());
   }
 
   Future<void> delete(IngredientEntity entity) async {
-    await _isar.writeTxn(() async {
-      await _isar.pantrySelectionEntitys
-          .filter()
-          .ingredientIdEqualTo(entity.id)
-          .deleteAll();
-      await _isar.ingredientEntitys.delete(entity.id);
-    });
+    final pantrySelection = await _readPantrySelection();
+    pantrySelection.remove(entity.id);
+    await metaStore.record(pantrySelectionKey).put(_db, pantrySelection.toList());
+    await ingredientsStore.record(entity.id).delete(_db);
+  }
+
+  Future<Set<int>> _readPantrySelection() async {
+    final raw = await metaStore.record(pantrySelectionKey).get(_db);
+    final list = (raw as List<Object?>? ?? []).whereType<int>().toSet();
+    return list;
   }
 }
 

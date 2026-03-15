@@ -1,31 +1,20 @@
-import 'package:isar/isar.dart';
+import 'package:sembast/sembast.dart';
 
-import '../models/pantry_selection_entity.dart';
+import '../db/app_database.dart';
 
 class PantryRepository {
-  const PantryRepository(this._isar);
+  const PantryRepository(this._db);
 
-  final Isar _isar;
+  final Database _db;
 
   Stream<Set<int>> watchSelectedIngredientIds() {
-    return _isar.pantrySelectionEntitys.where().watch(fireImmediately: true).map(
-          (items) => items.map((item) => item.ingredientId).toSet(),
-        );
+    return metaStore.record(pantrySelectionKey).onSnapshot(_db).map((snapshot) {
+      final raw = snapshot?.value;
+      return (raw as List<Object?>? ?? []).whereType<int>().toSet();
+    });
   }
 
   Future<void> replaceSelection(Set<int> ingredientIds) async {
-    await _isar.writeTxn(() async {
-      await _isar.pantrySelectionEntitys.clear();
-      final now = DateTime.now();
-      await _isar.pantrySelectionEntitys.putAll(
-        ingredientIds
-            .map(
-              (id) => PantrySelectionEntity()
-                ..ingredientId = id
-                ..updatedAt = now,
-            )
-            .toList(),
-      );
-    });
+    await metaStore.record(pantrySelectionKey).put(_db, ingredientIds.toList()..sort());
   }
 }

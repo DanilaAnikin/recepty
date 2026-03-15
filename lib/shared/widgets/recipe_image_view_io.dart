@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -19,6 +20,28 @@ Widget buildRecipeImageView({
         border: Border.all(color: const Color(0xFFE0D1C8)),
       ),
       child: Icon(placeholderIcon, size: 34),
+    );
+  }
+
+  if (path.startsWith('data:image/')) {
+    final commaIndex = path.indexOf(',');
+    final payload = commaIndex == -1 ? '' : path.substring(commaIndex + 1);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(borderRadius),
+      child: Image.memory(
+        base64Decode(payload),
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            width: width,
+            height: height,
+            color: Colors.white,
+            child: const Icon(Icons.broken_image_outlined),
+          );
+        },
+      ),
     );
   }
 

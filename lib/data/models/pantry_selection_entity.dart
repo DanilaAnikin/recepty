@@ -1,15 +1,9 @@
-import 'package:isar/isar.dart';
-
-part 'pantry_selection_entity.g.dart';
-
-@collection
 class PantrySelectionEntity {
-  PantrySelectionEntity();
+  PantrySelectionEntity({
+    this.ingredientId = 0,
+    DateTime? updatedAt,
+  }) : updatedAt = updatedAt ?? DateTime.now();
 
-  Id id = Isar.autoIncrement;
-
-  @Index(unique: true, replace: true)
-  late int ingredientId;
-
-  late DateTime updatedAt;
+  int ingredientId;
+  DateTime updatedAt;
 }

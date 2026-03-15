@@ -3,9 +3,9 @@
     "short_name": "Recepty Terinky",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "Recepty Terinky",
+    "background_color": "#F7EFE8",
+    "theme_color": "#C65670",
+    "description": "Osobni aplikace na recepty pro Terinku.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

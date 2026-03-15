@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 
 Widget buildRecipeImageView({
@@ -7,6 +8,20 @@ Widget buildRecipeImageView({
   required double borderRadius,
   required IconData placeholderIcon,
 }) {
+  if (path != null && path.startsWith('data:image/')) {
+    final commaIndex = path.indexOf(',');
+    final payload = commaIndex == -1 ? '' : path.substring(commaIndex + 1);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(borderRadius),
+      child: Image.memory(
+        base64Decode(payload),
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+      ),
+    );
+  }
+
   return Container(
     width: width,
     height: height,

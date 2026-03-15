@@ -35,7 +35,6 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
   final List<_DraftRecipeIngredient> _ingredients = [];
   bool _isSaving = false;
   String? _imagePath;
-  String? _existingImagePath;
 
   @override
   void initState() {
@@ -45,7 +44,6 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
       _titleController.text = recipe.title;
       _descriptionController.text = recipe.description;
       _imagePath = recipe.imagePath;
-      _existingImagePath = recipe.imagePath;
       for (final item in recipe.ingredients) {
         _ingredients.add(
           _DraftRecipeIngredient(
@@ -77,8 +75,9 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
     if (image == null) {
       return;
     }
+    final encodedImage = await ref.read(recipeImageStorageProvider).persistXFile(image);
     setState(() {
-      _imagePath = image.path;
+      _imagePath = encodedImage;
     });
   }
 
@@ -115,12 +114,13 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
       }
 
       embeddedItems.add(
-        RecipeIngredientEmbedded()
-          ..ingredientId = ingredient.id
-          ..ingredientNameSnapshot = ingredient.name
-          ..normalizedIngredientName = ingredient.normalizedName
-          ..amount = amount
-          ..unit = row.unit,
+        RecipeIngredientEmbedded(
+          ingredientId: ingredient.id,
+          ingredientNameSnapshot: ingredient.name,
+          normalizedIngredientName: ingredient.normalizedName,
+          amount: amount,
+          unit: row.unit,
+        ),
       );
     }
 
@@ -129,35 +129,21 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
     });
 
     try {
-      final storage = ref.read(recipeImageStorageProvider);
       final repository = ref.read(recipeRepositoryProvider);
       final recipe = widget.recipe ?? RecipeEntity();
-      var persistedImagePath = recipe.imagePath;
-      if (_imagePath != null && _imagePath != _existingImagePath) {
-        persistedImagePath = await storage.persistImage(_imagePath!);
-      } else if (_imagePath == null && _existingImagePath != null) {
-        await storage.deleteIfExists(_existingImagePath);
-        persistedImagePath = null;
-      }
 
       final now = DateTime.now();
       recipe
         ..title = _titleController.text.trim()
         ..normalizedTitle = TextNormalizer.normalize(_titleController.text)
         ..description = _descriptionController.text.trim()
-        ..imagePath = persistedImagePath
+        ..imagePath = _imagePath
         ..updatedAt = now
         ..cookingCount = widget.recipe?.cookingCount ?? 0
         ..createdAt = widget.recipe?.createdAt ?? now
         ..ingredients = embeddedItems;
 
       await repository.save(recipe);
-
-      if (_existingImagePath != null &&
-          _existingImagePath != persistedImagePath &&
-          _existingImagePath!.isNotEmpty) {
-        await storage.deleteIfExists(_existingImagePath);
-      }
 
       if (!mounted) {
         return;

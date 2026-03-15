@@ -8,7 +8,6 @@ import '../../../data/models/recipe_entity.dart';
 import '../../../shared/widgets/content_scaffold.dart';
 import '../../../shared/widgets/recipe_image_view.dart';
 import '../../../shared/widgets/section_card.dart';
-import '../application/recipe_image_storage_provider.dart';
 import '../application/recipes_provider.dart';
 import 'count_edit_dialog.dart';
 import 'recipe_form_screen.dart';
@@ -40,7 +39,6 @@ class RecipeDetailScreen extends ConsumerWidget {
       return;
     }
     await ref.read(recipeRepositoryProvider).delete(currentRecipe.id);
-    await ref.read(recipeImageStorageProvider).deleteIfExists(currentRecipe.imagePath);
     if (context.mounted) {
       Navigator.of(context).pop();
     }

@@ -13,7 +13,6 @@ import '../../../shared/widgets/search_input.dart';
 import '../../../shared/widgets/section_card.dart';
 import '../../pantry/application/pantry_provider.dart';
 import '../../pantry/presentation/pantry_selector_screen.dart';
-import '../application/recipe_image_storage_provider.dart';
 import '../application/recipe_match_result.dart';
 import '../application/recipe_matcher.dart';
 import '../application/recipes_provider.dart';
@@ -60,7 +59,6 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
       return;
     }
     await ref.read(recipeRepositoryProvider).delete(recipe.id);
-    await ref.read(recipeImageStorageProvider).deleteIfExists(recipe.imagePath);
   }
 
   @override
