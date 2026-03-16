@@ -100,35 +100,44 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
 
             return Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 92),
-              child: Column(
+              child: ListView(
                 children: [
                   SectionCard(
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const BrandWordmark(height: 46),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Vař z toho, co máš doma',
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 28),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Hledej recepty podle názvu i ingrediencí a přepínej mezi úplnou a částečnou shodou.',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: const Color(0xFF6E5C57),
+                        Row(
+                          children: [
+                            const Expanded(child: BrandWordmark(height: 32)),
+                            if (selectedIngredients.isNotEmpty)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF6D9E1),
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: Text(
+                                  '${selectedIngredients.length} doma',
+                                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                        color: const Color(0xFF8E3A4E),
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                ),
                               ),
+                          ],
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 10),
                         SearchInput(
                           controller: _searchController,
                           hintText: 'Hledat recept nebo ingredienci',
                           onChanged: (_) => setState(() {}),
                         ),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 12),
                         Wrap(
                           spacing: 10,
                           runSpacing: 10,
+                          crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             OutlinedButton.icon(
                               onPressed: () {
@@ -140,9 +149,7 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
                               },
                               icon: const Icon(Icons.shopping_basket_outlined),
                               label: Text(
-                                selectedIngredients.isEmpty
-                                    ? 'Vybrat ingredience'
-                                    : '${selectedIngredients.length} doma',
+                                selectedIngredients.isEmpty ? 'Vybrat ingredience' : 'Upravit domácí zásoby',
                               ),
                             ),
                             SegmentedButton<RecipeMatchMode>(
@@ -160,55 +167,51 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: filtered.isEmpty
-                        ? EmptyStateView(
-                            icon: Icons.menu_book_outlined,
-                            title: recipesData.isEmpty ? 'Zatím tu nic není' : 'Nic neodpovídá filtru',
-                            message: recipesData.isEmpty
-                                ? 'Přidej první recept a aplikace začne fungovat naplno.'
-                                : 'Zkus upravit hledání nebo výběr ingrediencí, které máš doma.',
-                          )
-                        : ListView.separated(
-                            itemCount: filtered.length,
-                            separatorBuilder: (_, _) => const SizedBox(height: 14),
-                            itemBuilder: (context, index) {
-                              final recipe = filtered[index].key;
-                              final match = filtered[index].value;
-                              return _RecipeCard(
-                                recipe: recipe,
-                                mode: _mode,
-                                match: match,
-                                onOpen: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute<void>(
-                                      builder: (_) => RecipeDetailScreen(recipe: recipe),
-                                    ),
-                                  );
-                                },
-                                onIncrement: () async {
-                                  await ref.read(recipeRepositoryProvider).incrementCookingCount(recipe);
-                                },
-                                onEditCount: () async {
-                                  final count = await showCountEditDialog(context, recipe.cookingCount);
-                                  if (count == null) {
-                                    return;
-                                  }
-                                  await ref.read(recipeRepositoryProvider).setCookingCount(recipe, count);
-                                },
-                                onEdit: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute<void>(
-                                      builder: (_) => RecipeFormScreen(recipe: recipe),
-                                    ),
-                                  );
-                                },
-                                onDelete: () => _deleteRecipe(recipe),
-                              );
-                            },
-                          ),
-                  ),
+                  const SizedBox(height: 14),
+                  if (filtered.isEmpty)
+                    EmptyStateView(
+                      icon: Icons.menu_book_outlined,
+                      title: recipesData.isEmpty ? 'Zatím tu nic není' : 'Nic neodpovídá filtru',
+                      message: recipesData.isEmpty
+                          ? 'Přidej první recept a aplikace začne fungovat naplno.'
+                          : 'Zkus upravit hledání nebo výběr ingrediencí, které máš doma.',
+                    )
+                  else
+                    for (var index = 0; index < filtered.length; index++) ...[
+                      _RecipeCard(
+                        recipe: filtered[index].key,
+                        mode: _mode,
+                        match: filtered[index].value,
+                        onOpen: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => RecipeDetailScreen(recipe: filtered[index].key),
+                            ),
+                          );
+                        },
+                        onIncrement: () async {
+                          await ref.read(recipeRepositoryProvider).incrementCookingCount(filtered[index].key);
+                        },
+                        onEditCount: () async {
+                          final recipe = filtered[index].key;
+                          final count = await showCountEditDialog(context, recipe.cookingCount);
+                          if (count == null) {
+                            return;
+                          }
+                          await ref.read(recipeRepositoryProvider).setCookingCount(recipe, count);
+                        },
+                        onEdit: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => RecipeFormScreen(recipe: filtered[index].key),
+                            ),
+                          );
+                        },
+                        onDelete: () => _deleteRecipe(filtered[index].key),
+                      ),
+                      if (index != filtered.length - 1) const SizedBox(height: 14),
+                    ],
+                  const SizedBox(height: 8),
                 ],
               ),
             );

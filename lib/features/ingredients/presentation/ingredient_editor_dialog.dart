@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/utils/ingredient_name_formatter.dart';
 import '../../../data/db/repository_providers.dart';
 import '../../../data/models/ingredient_entity.dart';
 import '../../../data/repositories/ingredient_repository.dart';
@@ -33,7 +34,9 @@ class _IngredientEditorDialogState extends ConsumerState<IngredientEditorDialog>
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.ingredient?.name ?? '');
+    _nameController = TextEditingController(
+      text: widget.ingredient == null ? '' : IngredientNameFormatter.prettify(widget.ingredient!.name),
+    );
   }
 
   @override
