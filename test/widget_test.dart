@@ -10,46 +10,64 @@ void main() {
     expect(TextNormalizer.normalize('Červená cibule'), 'cervena cibule');
   });
 
-  test('recipe matcher returns full match only when all ingredients are selected', () {
-    final recipe = RecipeEntity()
-      ..title = 'Test'
-      ..normalizedTitle = 'test'
-      ..description = ''
-      ..cookingCount = 0
-      ..createdAt = DateTime(2026)
-      ..updatedAt = DateTime(2026)
-      ..ingredients = [
-        RecipeIngredientEmbedded(
-          ingredientId: 1,
-          ingredientNameSnapshot: 'Mouka',
-          normalizedIngredientName: 'mouka',
-          amount: 100,
-          unit: IngredientUnit.g,
-        ),
-        RecipeIngredientEmbedded(
-          ingredientId: 2,
-          ingredientNameSnapshot: 'Mleko',
-          normalizedIngredientName: 'mleko',
-          amount: 200,
-          unit: IngredientUnit.ml,
-        ),
-      ];
+  test(
+    'recipe matcher returns full match only when all ingredients are selected',
+    () {
+      final recipe = RecipeEntity()
+        ..title = 'Test'
+        ..normalizedTitle = 'test'
+        ..description = ''
+        ..cookingCount = 0
+        ..createdAt = DateTime(2026)
+        ..updatedAt = DateTime(2026)
+        ..ingredients = [
+          RecipeIngredientEmbedded(
+            ingredientId: 1,
+            ingredientNameSnapshot: 'Mouka',
+            normalizedIngredientName: 'mouka',
+            amount: 100,
+            unit: IngredientUnit.g,
+          ),
+          RecipeIngredientEmbedded(
+            ingredientId: 2,
+            ingredientNameSnapshot: 'Mleko',
+            normalizedIngredientName: 'mleko',
+            amount: 200,
+            unit: IngredientUnit.ml,
+          ),
+        ];
 
-    final full = RecipeMatcher.evaluate(
-      recipe: recipe,
-      selectedIngredientIds: {1, 2},
-      query: '',
-      mode: RecipeMatchMode.full,
-    );
-    final partial = RecipeMatcher.evaluate(
-      recipe: recipe,
-      selectedIngredientIds: {1},
-      query: '',
-      mode: RecipeMatchMode.partial,
+      final full = RecipeMatcher.evaluate(
+        recipe: recipe,
+        selectedIngredientIds: {1, 2},
+        query: '',
+        mode: RecipeMatchMode.full,
+      );
+      final partial = RecipeMatcher.evaluate(
+        recipe: recipe,
+        selectedIngredientIds: {1},
+        query: '',
+        mode: RecipeMatchMode.partial,
+      );
+
+      expect(full.matches, isTrue);
+      expect(partial.matches, isTrue);
+      expect(partial.missingIngredients, ['Mleko']);
+    },
+  );
+
+  test('recipe ingredient preserves par unit in map serialization', () {
+    final ingredient = RecipeIngredientEmbedded(
+      ingredientId: 3,
+      ingredientNameSnapshot: 'Rohlik',
+      normalizedIngredientName: 'rohlik',
+      amount: 2,
+      unit: IngredientUnit.par,
     );
 
-    expect(full.matches, isTrue);
-    expect(partial.matches, isTrue);
-    expect(partial.missingIngredients, ['Mleko']);
+    final roundTrip = RecipeIngredientEmbedded.fromMap(ingredient.toMap());
+
+    expect(roundTrip.unit, IngredientUnit.par);
+    expect(roundTrip.unit.label, 'pár');
   });
 }

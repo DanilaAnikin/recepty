@@ -4,6 +4,7 @@ enum IngredientUnit {
   ml('ml'),
   l('l'),
   ks('ks'),
+  par('pár'),
   lzicka('lžička'),
   lzice('lžíce');
 
