@@ -8,7 +8,6 @@ import {
   Heart,
   HeartOff,
   ImagePlus,
-  Minus,
   Moon,
   Pencil,
   Plus,
@@ -619,63 +618,89 @@ export function ReceptyTerinkyApp() {
       <div className="background-blob blob-three" />
 
       <main className="app-frame">
-        <header className="topbar">
-          <Image
-            src="/branding/logo_wordmark.png"
-            alt="Recepty Terinky"
-            className="topbar-logo"
-            width={455}
-            height={110}
-            priority
-          />
-          <div className="topbar-actions">
-            <ThemeMenu
-              currentMode={appState.themeMode}
-              buttonLabel={themeButtonLabel}
-              onSelect={setThemeMode}
-            />
-          </div>
-        </header>
-
         <section className="hero-card">
-          <div className="hero-card-main">
-            <Image
-              src="/branding/logo_wordmark.png"
-              alt="Recepty Terinky"
-              className="hero-logo"
-              width={455}
-              height={110}
-              priority
-            />
-            {appState.pantrySelection.length > 0 ? (
-              <span className="status-chip">
-                <ShoppingBasket size={16} />
-                {appState.pantrySelection.length} doma
-              </span>
-            ) : null}
+          <div className="hero-topline">
+            <div className="hero-branding">
+              <span className="hero-kicker">Domácí kuchařka pro každý den</span>
+              <Image
+                src="/branding/logo_wordmark.png"
+                alt="Recepty Terinky"
+                className="hero-logo"
+                width={455}
+                height={110}
+                priority
+              />
+            </div>
+
+            <div className="hero-actions">
+              {appState.pantrySelection.length > 0 ? (
+                <span className="status-chip">
+                  <ShoppingBasket size={16} />
+                  {appState.pantrySelection.length} doma
+                </span>
+              ) : (
+                <span className="status-chip soft">Zásoby připravené k filtrování</span>
+              )}
+              <ThemeMenu
+                currentMode={appState.themeMode}
+                buttonLabel={themeButtonLabel}
+                onSelect={setThemeMode}
+              />
+            </div>
           </div>
 
-          <div className="tab-switch">
-            <button
-              type="button"
-              className={activeTab === "recipes" ? "tab-button active" : "tab-button"}
-              onClick={() => setActiveTab("recipes")}
-            >
-              Recepty
-            </button>
-            <button
-              type="button"
-              className={activeTab === "ingredients" ? "tab-button active" : "tab-button"}
-              onClick={() => setActiveTab("ingredients")}
-            >
-              Ingredience
-            </button>
+          <div className="hero-copy">
+            <h1>Recepty, ingredience a domácí zásoby v jednom přehledném prostoru.</h1>
+            <p>
+              Najdeš rychle, co máš doma, co chceš vařit a co stojí za to uložit
+              znovu. Bez chaosu a bez přepínání mezi obrazovkami, které se perou
+              o pozornost.
+            </p>
+          </div>
+
+          <div className="hero-bottom">
+            <div className="tab-switch">
+              <button
+                type="button"
+                className={activeTab === "recipes" ? "tab-button active" : "tab-button"}
+                onClick={() => setActiveTab("recipes")}
+              >
+                Recepty
+              </button>
+              <button
+                type="button"
+                className={activeTab === "ingredients" ? "tab-button active" : "tab-button"}
+                onClick={() => setActiveTab("ingredients")}
+              >
+                Ingredience
+              </button>
+            </div>
+
+            <p className="hero-footnote">
+              Vyladěné pro desktop i mobil, se zapamatováním theme i lokálních dat.
+            </p>
           </div>
         </section>
 
         {activeTab === "recipes" ? (
           <section className="content-stack">
-            <div className="panel-card">
+            <div className="section-intro">
+              <div>
+                <p className="section-eyebrow">Recepty</p>
+                <h2>Co budeš vařit?</h2>
+                <p>
+                  Filtruj podle ingrediencí, které už máš doma, a drž si pohromadě
+                  všechny oblíbené recepty.
+                </p>
+              </div>
+
+              <button type="button" className="primary-button desktop-action" onClick={() => openRecipeForm()}>
+                <Plus size={16} />
+                Nový recept
+              </button>
+            </div>
+
+            <div className="panel-card toolbar-panel">
               <div className="search-row">
                 <Search size={18} />
                 <input
@@ -810,7 +835,33 @@ export function ReceptyTerinkyApp() {
           </section>
         ) : (
           <section className="content-stack">
-            <div className="panel-card">
+            <div className="section-intro">
+              <div>
+                <p className="section-eyebrow">Ingredience</p>
+                <h2>Seznam surovin pod kontrolou</h2>
+                <p>
+                  Udržuj oblíbené ingredience nahoře, upravuj názvy a doplňuj si
+                  vlastní položky bez zbytečných kroků.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="primary-button desktop-action"
+                onClick={() =>
+                  setIngredientDialog({
+                    ingredient: null,
+                    initialName: "",
+                    pickerRowId: null,
+                  })
+                }
+              >
+                <Plus size={16} />
+                Nová ingredience
+              </button>
+            </div>
+
+            <div className="panel-card toolbar-panel">
               <div className="search-row">
                 <Search size={18} />
                 <input

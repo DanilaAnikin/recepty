@@ -1,7 +1,20 @@
 import type { Metadata } from "next";
+import { Fraunces, Manrope } from "next/font/google";
 import Script from "next/script";
 
 import "./globals.css";
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-display",
+  weight: ["600", "700"],
+});
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  variable: "--font-body",
+  weight: ["400", "500", "600", "700"],
+});
 
 const themeBootstrapScript = `
   (function () {
@@ -36,7 +49,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="cs" suppressHydrationWarning>
-      <body>
+      <body className={`${manrope.variable} ${fraunces.variable}`}>
         <Script id="theme-bootstrap" strategy="beforeInteractive">
           {themeBootstrapScript}
         </Script>
