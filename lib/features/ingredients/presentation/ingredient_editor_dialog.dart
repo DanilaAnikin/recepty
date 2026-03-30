@@ -6,27 +6,34 @@ import '../../../data/db/repository_providers.dart';
 import '../../../data/models/ingredient_entity.dart';
 import '../../../data/repositories/ingredient_repository.dart';
 
-Future<void> showIngredientEditorDialog(
+Future<IngredientEntity?> showIngredientEditorDialog(
   BuildContext context,
   WidgetRef ref, {
   IngredientEntity? ingredient,
+  String? initialName,
 }) async {
-  await showDialog<void>(
+  return showDialog<IngredientEntity>(
     context: context,
-    builder: (context) => IngredientEditorDialog(ingredient: ingredient),
+    builder: (context) => IngredientEditorDialog(
+      ingredient: ingredient,
+      initialName: initialName,
+    ),
   );
 }
 
 class IngredientEditorDialog extends ConsumerStatefulWidget {
-  const IngredientEditorDialog({super.key, this.ingredient});
+  const IngredientEditorDialog({super.key, this.ingredient, this.initialName});
 
   final IngredientEntity? ingredient;
+  final String? initialName;
 
   @override
-  ConsumerState<IngredientEditorDialog> createState() => _IngredientEditorDialogState();
+  ConsumerState<IngredientEditorDialog> createState() =>
+      _IngredientEditorDialogState();
 }
 
-class _IngredientEditorDialogState extends ConsumerState<IngredientEditorDialog> {
+class _IngredientEditorDialogState
+    extends ConsumerState<IngredientEditorDialog> {
   late final TextEditingController _nameController;
   final _formKey = GlobalKey<FormState>();
   bool _isSaving = false;
@@ -35,7 +42,9 @@ class _IngredientEditorDialogState extends ConsumerState<IngredientEditorDialog>
   void initState() {
     super.initState();
     _nameController = TextEditingController(
-      text: widget.ingredient == null ? '' : IngredientNameFormatter.prettify(widget.ingredient!.name),
+      text: widget.ingredient == null
+          ? widget.initialName?.trim() ?? ''
+          : IngredientNameFormatter.prettify(widget.ingredient!.name),
     );
   }
 
@@ -56,21 +65,28 @@ class _IngredientEditorDialogState extends ConsumerState<IngredientEditorDialog>
 
     final repo = ref.read(ingredientRepositoryProvider);
     try {
+      late final IngredientEntity savedIngredient;
       if (widget.ingredient == null) {
-        await repo.create(name: _nameController.text, isSystem: false);
+        savedIngredient = await repo.create(
+          name: _nameController.text,
+          isSystem: false,
+        );
       } else {
-        await repo.update(entity: widget.ingredient!, name: _nameController.text);
+        savedIngredient = await repo.update(
+          entity: widget.ingredient!,
+          name: _nameController.text,
+        );
       }
       if (mounted) {
-        Navigator.of(context).pop();
+        Navigator.of(context).pop(savedIngredient);
       }
     } on IngredientRepositoryException catch (error) {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
     } finally {
       if (mounted) {
         setState(() {
@@ -83,16 +99,16 @@ class _IngredientEditorDialogState extends ConsumerState<IngredientEditorDialog>
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.ingredient == null ? 'Nová ingredience' : 'Upravit ingredienci'),
+      title: Text(
+        widget.ingredient == null ? 'Nová ingredience' : 'Upravit ingredienci',
+      ),
       content: Form(
         key: _formKey,
         child: TextFormField(
           controller: _nameController,
           autofocus: true,
           textInputAction: TextInputAction.done,
-          decoration: const InputDecoration(
-            labelText: 'Název ingredience',
-          ),
+          decoration: const InputDecoration(labelText: 'Název ingredience'),
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
               return 'Zadej název ingredience.';

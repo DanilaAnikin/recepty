@@ -7,6 +7,7 @@ import '../../../data/models/ingredient_entity.dart';
 import '../../../shared/widgets/filter_pill.dart';
 import '../../../shared/widgets/search_input.dart';
 import '../../ingredients/application/ingredients_provider.dart';
+import '../../ingredients/presentation/ingredient_editor_dialog.dart';
 
 Future<IngredientEntity?> showIngredientPickerDialog(BuildContext context) {
   return showDialog<IngredientEntity>(
@@ -19,17 +20,48 @@ class IngredientPickerDialog extends ConsumerStatefulWidget {
   const IngredientPickerDialog({super.key});
 
   @override
-  ConsumerState<IngredientPickerDialog> createState() => _IngredientPickerDialogState();
+  ConsumerState<IngredientPickerDialog> createState() =>
+      _IngredientPickerDialogState();
 }
 
-class _IngredientPickerDialogState extends ConsumerState<IngredientPickerDialog> {
+class _IngredientPickerDialogState
+    extends ConsumerState<IngredientPickerDialog> {
   final TextEditingController _searchController = TextEditingController();
   bool _favoritesOnly = false;
+  bool _isCreating = false;
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _createIngredient() async {
+    if (_isCreating) {
+      return;
+    }
+
+    setState(() {
+      _isCreating = true;
+    });
+
+    final createdIngredient = await showIngredientEditorDialog(
+      context,
+      ref,
+      initialName: _searchController.text,
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _isCreating = false;
+    });
+
+    if (createdIngredient != null) {
+      Navigator.of(context).pop(createdIngredient);
+    }
   }
 
   @override
@@ -43,9 +75,13 @@ class _IngredientPickerDialogState extends ConsumerState<IngredientPickerDialog>
         child: ingredients.when(
           data: (items) {
             final query = TextNormalizer.normalize(_searchController.text);
+            final exactMatchExists = query.isNotEmpty
+                ? items.any((item) => item.normalizedName == query)
+                : false;
             final filtered = items.where((item) {
               final matchesFavorites = !_favoritesOnly || item.isFavorite;
-              final matchesQuery = query.isEmpty || item.normalizedName.contains(query);
+              final matchesQuery =
+                  query.isEmpty || item.normalizedName.contains(query);
               return matchesFavorites && matchesQuery;
             }).toList();
 
@@ -74,20 +110,55 @@ class _IngredientPickerDialogState extends ConsumerState<IngredientPickerDialog>
                   ],
                 ),
                 const SizedBox(height: 10),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: filtered.length,
-                    itemBuilder: (context, index) {
-                      final item = filtered[index];
-                      return ListTile(
-                        title: Text(IngredientNameFormatter.prettify(item.name)),
-                        trailing: item.isFavorite
-                            ? const Icon(Icons.favorite, color: Color(0xFFC65670))
-                            : null,
-                        onTap: () => Navigator.of(context).pop(item),
-                      );
-                    },
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: OutlinedButton.icon(
+                    onPressed: _isCreating ? null : _createIngredient,
+                    icon: const Icon(Icons.add),
+                    label: Text(
+                      query.isNotEmpty && !exactMatchExists
+                          ? 'Vytvořit "${_searchController.text.trim()}"'
+                          : 'Nová ingredience',
+                    ),
                   ),
+                ),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: filtered.isEmpty
+                      ? Center(
+                          child: Text(
+                            query.isEmpty
+                                ? 'Zatím tu nejsou žádné ingredience.'
+                                : 'Nic nenalezeno. Ingredienci můžeš rovnou vytvořit.',
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            final item = filtered[index];
+                            return ListTile(
+                              title: Text(
+                                IngredientNameFormatter.prettify(item.name),
+                              ),
+                              trailing: item.isFavorite
+                                  ? Icon(
+                                      Icons.favorite,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
+                                    )
+                                  : null,
+                              onTap: () => Navigator.of(context).pop(item),
+                            );
+                          },
+                        ),
                 ),
               ],
             );

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../app/theme/app_theme.dart';
+
 class AppBackdrop extends StatelessWidget {
   const AppBackdrop({required this.child, super.key});
 
@@ -7,16 +9,13 @@ class AppBackdrop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final backdrop = Theme.of(context).extension<AppThemeBackdrop>()!;
     return DecoratedBox(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFFFFF6F2),
-            Color(0xFFF7EFE8),
-            Color(0xFFF2E6DF),
-          ],
+          colors: [backdrop.top, backdrop.middle, backdrop.bottom],
         ),
       ),
       child: Stack(
@@ -24,17 +23,17 @@ class AppBackdrop extends StatelessWidget {
           Positioned(
             top: -40,
             right: -20,
-            child: _Blob(size: 180, color: Color(0xFFFFD7D7)),
+            child: _Blob(size: 180, color: backdrop.blobPrimary),
           ),
           Positioned(
             top: 180,
             left: -48,
-            child: _Blob(size: 148, color: Color(0xFFE9F1DA)),
+            child: _Blob(size: 148, color: backdrop.blobSecondary),
           ),
           Positioned(
             bottom: -42,
             right: 8,
-            child: _Blob(size: 132, color: Color(0xFFF5DDC9)),
+            child: _Blob(size: 132, color: backdrop.blobTertiary),
           ),
           child,
         ],

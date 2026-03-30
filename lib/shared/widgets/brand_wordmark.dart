@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class BrandWordmark extends StatelessWidget {
   const BrandWordmark({
     super.key,
-    this.height = 52,
+    this.height = 68,
     this.alignment = Alignment.centerLeft,
   });
 
@@ -18,6 +18,7 @@ class BrandWordmark extends StatelessWidget {
         'assets/branding/logo_wordmark.png',
         height: height,
         fit: BoxFit.contain,
+        filterQuality: FilterQuality.high,
       ),
     );
   }

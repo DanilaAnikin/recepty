@@ -15,6 +15,8 @@ class PantryRepository {
   }
 
   Future<void> replaceSelection(Set<int> ingredientIds) async {
-    await metaStore.record(pantrySelectionKey).put(_db, ingredientIds.toList()..sort());
+    await metaStore
+        .record(pantrySelectionKey)
+        .put(_db, ingredientIds.toList()..sort());
   }
 }

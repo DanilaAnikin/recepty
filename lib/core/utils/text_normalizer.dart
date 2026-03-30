@@ -26,7 +26,10 @@ class TextNormalizer {
   };
 
   static String normalize(String value) {
-    final collapsed = value.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+    final collapsed = value.trim().toLowerCase().replaceAll(
+      RegExp(r'\s+'),
+      ' ',
+    );
     final buffer = StringBuffer();
     for (final rune in collapsed.runes) {
       final char = String.fromCharCode(rune);

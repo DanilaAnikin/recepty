@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'recipe_image_view_stub.dart'
     if (dart.library.io) 'recipe_image_view_io.dart'
-    if (dart.library.js_interop) 'recipe_image_view_web.dart' as image_impl;
+    if (dart.library.js_interop) 'recipe_image_view_web.dart'
+    as image_impl;
 
 class RecipeImageView extends StatelessWidget {
   const RecipeImageView({

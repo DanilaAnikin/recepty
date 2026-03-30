@@ -10,6 +10,7 @@ import '../../../shared/widgets/empty_state_view.dart';
 import '../../../shared/widgets/filter_pill.dart';
 import '../../../shared/widgets/search_input.dart';
 import '../../../shared/widgets/section_card.dart';
+import '../../../shared/widgets/theme_mode_button.dart';
 import '../application/ingredients_provider.dart';
 import 'ingredient_editor_dialog.dart';
 
@@ -67,7 +68,8 @@ class _IngredientsScreenState extends ConsumerState<IngredientsScreen> {
     final query = TextNormalizer.normalize(_searchController.text);
     final filtered = ingredients.where((ingredient) {
       final matchesFavorites = !_favoritesOnly || ingredient.isFavorite;
-      final matchesQuery = query.isEmpty || ingredient.normalizedName.contains(query);
+      final matchesQuery =
+          query.isEmpty || ingredient.normalizedName.contains(query);
       return matchesFavorites && matchesQuery;
     }).toList();
 
@@ -89,6 +91,7 @@ class _IngredientsScreenState extends ConsumerState<IngredientsScreen> {
     return ContentScaffold(
       appBar: AppBar(
         title: const Text('Ingredience'),
+        actions: const [ThemeModeButton()],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => showIngredientEditorDialog(context, ref),
@@ -96,6 +99,7 @@ class _IngredientsScreenState extends ConsumerState<IngredientsScreen> {
       ),
       body: ingredients.when(
         data: (items) {
+          final colorScheme = Theme.of(context).colorScheme;
           final entries = _buildEntries(items);
           return Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
@@ -137,9 +141,11 @@ class _IngredientsScreenState extends ConsumerState<IngredientsScreen> {
                       ? EmptyStateView(
                           icon: Icons.restaurant_outlined,
                           title: 'Nic se nenašlo',
-                          message: 'Zkus upravit hledání nebo přidej novou ingredienci.',
+                          message:
+                              'Zkus upravit hledání nebo přidej novou ingredienci.',
                           action: FilledButton.icon(
-                            onPressed: () => showIngredientEditorDialog(context, ref),
+                            onPressed: () =>
+                                showIngredientEditorDialog(context, ref),
                             icon: const Icon(Icons.add),
                             label: const Text('Přidat ingredienci'),
                           ),
@@ -152,43 +158,72 @@ class _IngredientsScreenState extends ConsumerState<IngredientsScreen> {
                               final entry = entries[index];
                               if (entry is _HeaderEntry) {
                                 return Padding(
-                                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
+                                  padding: const EdgeInsets.fromLTRB(
+                                    16,
+                                    12,
+                                    16,
+                                    6,
+                                  ),
                                   child: Text(
                                     entry.letter,
-                                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge
+                                        ?.copyWith(
                                           fontWeight: FontWeight.w700,
                                           fontSize: 12,
                                           letterSpacing: 1.6,
-                                          color: const Color(0xFF8A706A),
+                                          color: colorScheme.onSurfaceVariant,
                                         ),
                                   ),
                                 );
                               }
 
-                              final ingredient = (entry as _ItemEntry).ingredient;
+                              final ingredient =
+                                  (entry as _ItemEntry).ingredient;
                               return ListTile(
                                 dense: true,
-                                title: Text(IngredientNameFormatter.prettify(ingredient.name)),
+                                title: Text(
+                                  IngredientNameFormatter.prettify(
+                                    ingredient.name,
+                                  ),
+                                ),
                                 leading: IconButton(
                                   onPressed: () async {
-                                    await ref.read(ingredientRepositoryProvider).toggleFavorite(ingredient);
+                                    await ref
+                                        .read(ingredientRepositoryProvider)
+                                        .toggleFavorite(ingredient);
                                   },
                                   icon: Icon(
-                                    ingredient.isFavorite ? Icons.favorite : Icons.favorite_border,
-                                    color: ingredient.isFavorite ? const Color(0xFFC65670) : const Color(0xFF8A706A),
+                                    ingredient.isFavorite
+                                        ? Icons.favorite
+                                        : Icons.favorite_border,
+                                    color: ingredient.isFavorite
+                                        ? colorScheme.primary
+                                        : colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                                 trailing: PopupMenuButton<String>(
                                   onSelected: (value) async {
                                     if (value == 'edit') {
-                                      await showIngredientEditorDialog(context, ref, ingredient: ingredient);
+                                      await showIngredientEditorDialog(
+                                        context,
+                                        ref,
+                                        ingredient: ingredient,
+                                      );
                                     } else if (value == 'delete') {
                                       await _confirmDelete(ingredient);
                                     }
                                   },
                                   itemBuilder: (context) => const [
-                                    PopupMenuItem(value: 'edit', child: Text('Upravit')),
-                                    PopupMenuItem(value: 'delete', child: Text('Smazat')),
+                                    PopupMenuItem(
+                                      value: 'edit',
+                                      child: Text('Upravit'),
+                                    ),
+                                    PopupMenuItem(
+                                      value: 'delete',
+                                      child: Text('Smazat'),
+                                    ),
                                   ],
                                 ),
                               );

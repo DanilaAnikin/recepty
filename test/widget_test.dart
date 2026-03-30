@@ -25,14 +25,14 @@ void main() {
             ingredientId: 1,
             ingredientNameSnapshot: 'Mouka',
             normalizedIngredientName: 'mouka',
-            amount: 100,
+            amountText: '100',
             unit: IngredientUnit.g,
           ),
           RecipeIngredientEmbedded(
             ingredientId: 2,
             ingredientNameSnapshot: 'Mleko',
             normalizedIngredientName: 'mleko',
-            amount: 200,
+            amountText: '200',
             unit: IngredientUnit.ml,
           ),
         ];
@@ -61,7 +61,7 @@ void main() {
       ingredientId: 3,
       ingredientNameSnapshot: 'Rohlik',
       normalizedIngredientName: 'rohlik',
-      amount: 2,
+      amountText: '2',
       unit: IngredientUnit.par,
     );
 
@@ -69,5 +69,17 @@ void main() {
 
     expect(roundTrip.unit, IngredientUnit.par);
     expect(roundTrip.unit.label, 'pár');
+  });
+
+  test('recipe ingredient loads legacy numeric amount as text', () {
+    final ingredient = RecipeIngredientEmbedded.fromMap({
+      'ingredientId': 4,
+      'ingredientNameSnapshot': 'Cukr',
+      'normalizedIngredientName': 'cukr',
+      'amount': 1.5,
+      'unit': IngredientUnit.kg.name,
+    });
+
+    expect(ingredient.amountText, '1.5');
   });
 }

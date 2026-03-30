@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/utils/formatters.dart';
 import '../../../core/utils/ingredient_name_formatter.dart';
 import '../../../data/db/repository_providers.dart';
 import '../../../data/models/recipe_entity.dart';
 import '../../../shared/widgets/content_scaffold.dart';
 import '../../../shared/widgets/recipe_image_view.dart';
 import '../../../shared/widgets/section_card.dart';
+import '../../../shared/widgets/theme_mode_button.dart';
 import '../application/recipes_provider.dart';
 import 'count_edit_dialog.dart';
 import 'recipe_form_screen.dart';
@@ -17,12 +17,18 @@ class RecipeDetailScreen extends ConsumerWidget {
 
   final RecipeEntity recipe;
 
-  Future<void> _deleteRecipe(BuildContext context, WidgetRef ref, RecipeEntity currentRecipe) async {
+  Future<void> _deleteRecipe(
+    BuildContext context,
+    WidgetRef ref,
+    RecipeEntity currentRecipe,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Smazat recept?'),
-        content: Text('Recept "${currentRecipe.title}" bude trvale odstraněný.'),
+        content: Text(
+          'Recept "${currentRecipe.title}" bude trvale odstraněný.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -46,7 +52,9 @@ class RecipeDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final liveRecipe = ref.watch(recipesStreamProvider).maybeWhen(
+    final liveRecipe = ref
+        .watch(recipesStreamProvider)
+        .maybeWhen(
           data: (items) {
             for (final item in items) {
               if (item.id == recipe.id) {
@@ -59,15 +67,14 @@ class RecipeDetailScreen extends ConsumerWidget {
         );
 
     if (liveRecipe == null) {
-      return const Scaffold(
-        body: Center(child: Text('Recept už neexistuje.')),
-      );
+      return const Scaffold(body: Center(child: Text('Recept už neexistuje.')));
     }
 
     return ContentScaffold(
       appBar: AppBar(
         title: const Text('Detail receptu'),
         actions: [
+          const ThemeModeButton(),
           IconButton(
             onPressed: () {
               Navigator.of(context).push(
@@ -98,7 +105,10 @@ class RecipeDetailScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(liveRecipe.title, style: Theme.of(context).textTheme.headlineSmall),
+                          Text(
+                            liveRecipe.title,
+                            style: Theme.of(context).textTheme.headlineSmall,
+                          ),
                           const SizedBox(height: 8),
                           Wrap(
                             spacing: 8,
@@ -106,7 +116,8 @@ class RecipeDetailScreen extends ConsumerWidget {
                             children: [
                               _MetaChip(
                                 icon: Icons.restaurant_menu,
-                                label: '${liveRecipe.ingredients.length} ingrediencí',
+                                label:
+                                    '${liveRecipe.ingredients.length} ingrediencí',
                               ),
                               _MetaChip(
                                 icon: Icons.favorite,
@@ -126,7 +137,9 @@ class RecipeDetailScreen extends ConsumerWidget {
                   children: [
                     FilledButton.icon(
                       onPressed: () async {
-                        await ref.read(recipeRepositoryProvider).incrementCookingCount(liveRecipe);
+                        await ref
+                            .read(recipeRepositoryProvider)
+                            .incrementCookingCount(liveRecipe);
                       },
                       icon: const Icon(Icons.add),
                       label: const Text('Přidat vaření'),
@@ -134,11 +147,16 @@ class RecipeDetailScreen extends ConsumerWidget {
                     const SizedBox(width: 10),
                     OutlinedButton.icon(
                       onPressed: () async {
-                        final count = await showCountEditDialog(context, liveRecipe.cookingCount);
+                        final count = await showCountEditDialog(
+                          context,
+                          liveRecipe.cookingCount,
+                        );
                         if (count == null) {
                           return;
                         }
-                        await ref.read(recipeRepositoryProvider).setCookingCount(liveRecipe, count);
+                        await ref
+                            .read(recipeRepositoryProvider)
+                            .setCookingCount(liveRecipe, count);
                       },
                       icon: const Icon(Icons.tune),
                       label: const Text('Upravit počet'),
@@ -153,7 +171,10 @@ class RecipeDetailScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                    Text('Ingredience', style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Ingredience',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: 10),
                 for (final item in liveRecipe.ingredients)
                   Padding(
@@ -166,11 +187,7 @@ class RecipeDetailScreen extends ConsumerWidget {
                           child: Icon(Icons.circle, size: 8),
                         ),
                         const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            '${IngredientNameFormatter.prettify(item.ingredientNameSnapshot)} - ${formatAmount(item.amount)} ${item.unit.label}',
-                          ),
-                        ),
+                        Expanded(child: Text(_buildIngredientLine(item))),
                       ],
                     ),
                   ),
@@ -185,7 +202,9 @@ class RecipeDetailScreen extends ConsumerWidget {
                 Text('Postup', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 10),
                 Text(
-                  liveRecipe.description.isEmpty ? 'Zatím bez postupu.' : liveRecipe.description,
+                  liveRecipe.description.isEmpty
+                      ? 'Zatím bez postupu.'
+                      : liveRecipe.description,
                 ),
               ],
             ),
@@ -204,17 +223,18 @@ class _MetaChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.95),
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE0D1C8)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: const Color(0xFFC65670)),
+          Icon(icon, size: 16, color: colorScheme.primary),
           const SizedBox(width: 6),
           Text(label),
         ],
@@ -238,4 +258,15 @@ class _DetailImage extends StatelessWidget {
       placeholderIcon: Icons.photo_camera_back_outlined,
     );
   }
+}
+
+String _buildIngredientLine(RecipeIngredientEmbedded item) {
+  final ingredientName = IngredientNameFormatter.prettify(
+    item.ingredientNameSnapshot,
+  );
+  final amountText = item.amountText.trim();
+  if (amountText.isEmpty) {
+    return ingredientName;
+  }
+  return '$ingredientName - $amountText ${item.unit.label}';
 }

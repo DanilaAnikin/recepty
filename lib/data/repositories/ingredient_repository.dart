@@ -12,7 +12,10 @@ class IngredientRepository {
   Stream<List<IngredientEntity>> watchAll() {
     return ingredientsStore.query().onSnapshots(_db).map((snapshots) {
       final items = snapshots
-          .map((snapshot) => IngredientEntity.fromMap(snapshot.value, snapshot.key))
+          .map(
+            (snapshot) =>
+                IngredientEntity.fromMap(snapshot.value, snapshot.key),
+          )
           .toList();
       items.sort((a, b) => a.normalizedName.compareTo(b.normalizedName));
       return items;
@@ -25,7 +28,9 @@ class IngredientRepository {
     }
     final snapshots = await ingredientsStore.find(_db);
     return snapshots
-        .map((snapshot) => IngredientEntity.fromMap(snapshot.value, snapshot.key))
+        .map(
+          (snapshot) => IngredientEntity.fromMap(snapshot.value, snapshot.key),
+        )
         .where((item) => ids.contains(item.id))
         .toList();
   }
@@ -48,7 +53,9 @@ class IngredientRepository {
     final normalizedName = TextNormalizer.normalize(name);
     final existing = await getByNormalizedName(normalizedName);
     if (existing != null) {
-      throw const IngredientRepositoryException('Ingredience se stejným názvem už existuje.');
+      throw const IngredientRepositoryException(
+        'Ingredience se stejným názvem už existuje.',
+      );
     }
 
     final now = DateTime.now();
@@ -74,7 +81,9 @@ class IngredientRepository {
     final normalizedName = TextNormalizer.normalize(name);
     final existing = await getByNormalizedName(normalizedName);
     if (existing != null && existing.id != entity.id) {
-      throw const IngredientRepositoryException('Ingredience se stejným názvem už existuje.');
+      throw const IngredientRepositoryException(
+        'Ingredience se stejným názvem už existuje.',
+      );
     }
 
     entity
@@ -97,7 +106,9 @@ class IngredientRepository {
   Future<void> delete(IngredientEntity entity) async {
     final pantrySelection = await _readPantrySelection();
     pantrySelection.remove(entity.id);
-    await metaStore.record(pantrySelectionKey).put(_db, pantrySelection.toList());
+    await metaStore
+        .record(pantrySelectionKey)
+        .put(_db, pantrySelection.toList());
     await ingredientsStore.record(entity.id).delete(_db);
   }
 

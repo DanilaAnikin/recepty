@@ -10,17 +10,26 @@ Widget buildRecipeImageView({
   required double borderRadius,
   required IconData placeholderIcon,
 }) {
-  if (path == null || path.isEmpty) {
+  Widget placeholder(BuildContext context, {IconData? icon}) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.92),
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.92),
         borderRadius: BorderRadius.circular(borderRadius),
-        border: Border.all(color: const Color(0xFFE0D1C8)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
-      child: Icon(placeholderIcon, size: 34),
+      child: Icon(
+        icon ?? placeholderIcon,
+        size: 34,
+        color: colorScheme.onSurfaceVariant,
+      ),
     );
+  }
+
+  if (path == null || path.isEmpty) {
+    return Builder(builder: placeholder);
   }
 
   if (path.startsWith('data:image/')) {
@@ -34,12 +43,7 @@ Widget buildRecipeImageView({
         height: height,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) {
-          return Container(
-            width: width,
-            height: height,
-            color: Colors.white,
-            child: const Icon(Icons.broken_image_outlined),
-          );
+          return placeholder(context, icon: Icons.broken_image_outlined);
         },
       ),
     );
@@ -53,12 +57,7 @@ Widget buildRecipeImageView({
       height: height,
       fit: BoxFit.cover,
       errorBuilder: (context, error, stackTrace) {
-        return Container(
-          width: width,
-          height: height,
-          color: Colors.white,
-          child: const Icon(Icons.broken_image_outlined),
-        );
+        return placeholder(context, icon: Icons.broken_image_outlined);
       },
     ),
   );

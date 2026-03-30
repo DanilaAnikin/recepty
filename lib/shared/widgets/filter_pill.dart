@@ -16,8 +16,11 @@ class FilterPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = selected ? const Color(0xFFC65670) : const Color(0xFFFFF7F3);
-    final fg = selected ? Colors.white : const Color(0xFF6A5550);
+    final colorScheme = Theme.of(context).colorScheme;
+    final bg = selected
+        ? colorScheme.primary
+        : colorScheme.surfaceContainerHigh;
+    final fg = selected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant;
     return Material(
       color: bg,
       borderRadius: BorderRadius.circular(999),
@@ -36,9 +39,9 @@ class FilterPill extends StatelessWidget {
               Text(
                 label,
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: fg,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  color: fg,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ],
           ),

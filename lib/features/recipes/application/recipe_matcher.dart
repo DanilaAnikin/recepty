@@ -13,10 +13,15 @@ class RecipeMatcher {
     required RecipeMatchMode mode,
   }) {
     final normalizedQuery = TextNormalizer.normalize(query);
-    final recipeNames = recipe.ingredients.map((item) => item.ingredientNameSnapshot).toList();
-    final recipeNormalizedNames = recipe.ingredients.map((item) => item.normalizedIngredientName).toList();
+    final recipeNames = recipe.ingredients
+        .map((item) => item.ingredientNameSnapshot)
+        .toList();
+    final recipeNormalizedNames = recipe.ingredients
+        .map((item) => item.normalizedIngredientName)
+        .toList();
 
-    final matchesText = normalizedQuery.isEmpty ||
+    final matchesText =
+        normalizedQuery.isEmpty ||
         recipe.normalizedTitle.contains(normalizedQuery) ||
         recipeNormalizedNames.any((item) => item.contains(normalizedQuery));
     if (!matchesText) {
@@ -30,7 +35,9 @@ class RecipeMatcher {
     final missing = <String>[];
     var anySelected = false;
     for (final item in recipe.ingredients) {
-      final isSelected = item.ingredientId != null && selectedIngredientIds.contains(item.ingredientId);
+      final isSelected =
+          item.ingredientId != null &&
+          selectedIngredientIds.contains(item.ingredientId);
       if (isSelected) {
         anySelected = true;
       } else {

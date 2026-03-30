@@ -11,6 +11,7 @@ import '../../../shared/widgets/empty_state_view.dart';
 import '../../../shared/widgets/recipe_image_view.dart';
 import '../../../shared/widgets/search_input.dart';
 import '../../../shared/widgets/section_card.dart';
+import '../../../shared/widgets/theme_mode_button.dart';
 import '../../pantry/application/pantry_provider.dart';
 import '../../pantry/presentation/pantry_selector_screen.dart';
 import '../application/recipe_match_result.dart';
@@ -68,14 +69,13 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
 
     return ContentScaffold(
       appBar: AppBar(
-        title: const BrandWordmark(height: 34),
+        title: const BrandWordmark(height: 52),
+        actions: const [ThemeModeButton()],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (_) => const RecipeFormScreen(),
-            ),
+            MaterialPageRoute<void>(builder: (_) => const RecipeFormScreen()),
           );
         },
         child: const Icon(Icons.add),
@@ -83,6 +83,7 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
       body: recipes.when(
         data: (recipesData) => pantry.when(
           data: (selectedIngredients) {
+            final colorScheme = Theme.of(context).colorScheme;
             final bottomInset = MediaQuery.paddingOf(context).bottom;
             final filtered = recipesData
                 .map(
@@ -109,18 +110,22 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
                     children: [
                       Row(
                         children: [
-                          const Expanded(child: BrandWordmark(height: 32)),
+                          const Expanded(child: BrandWordmark(height: 58)),
                           if (selectedIngredients.isNotEmpty)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF6D9E1),
+                                color: colorScheme.secondaryContainer,
                                 borderRadius: BorderRadius.circular(999),
                               ),
                               child: Text(
                                 '${selectedIngredients.length} doma',
-                                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                      color: const Color(0xFF8E3A4E),
+                                style: Theme.of(context).textTheme.labelMedium
+                                    ?.copyWith(
+                                      color: colorScheme.onSecondaryContainer,
                                       fontWeight: FontWeight.w700,
                                     ),
                               ),
@@ -149,13 +154,21 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
                             },
                             icon: const Icon(Icons.shopping_basket_outlined),
                             label: Text(
-                              selectedIngredients.isEmpty ? 'Vybrat ingredience' : 'Upravit domácí zásoby',
+                              selectedIngredients.isEmpty
+                                  ? 'Vybrat ingredience'
+                                  : 'Upravit domácí zásoby',
                             ),
                           ),
                           SegmentedButton<RecipeMatchMode>(
                             segments: const [
-                              ButtonSegment(value: RecipeMatchMode.full, label: Text('Celé')),
-                              ButtonSegment(value: RecipeMatchMode.partial, label: Text('Částečné')),
+                              ButtonSegment(
+                                value: RecipeMatchMode.full,
+                                label: Text('Celé'),
+                              ),
+                              ButtonSegment(
+                                value: RecipeMatchMode.partial,
+                                label: Text('Částečné'),
+                              ),
                             ],
                             selected: {_mode},
                             onSelectionChanged: (selection) {
@@ -171,7 +184,9 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
                 if (filtered.isEmpty)
                   EmptyStateView(
                     icon: Icons.menu_book_outlined,
-                    title: recipesData.isEmpty ? 'Zatím tu nic není' : 'Nic neodpovídá filtru',
+                    title: recipesData.isEmpty
+                        ? 'Zatím tu nic není'
+                        : 'Nic neodpovídá filtru',
                     message: recipesData.isEmpty
                         ? 'Přidej první recept a aplikace začne fungovat naplno.'
                         : 'Zkus upravit hledání nebo výběr ingrediencí, které máš doma.',
@@ -185,31 +200,41 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
                       onOpen: () {
                         Navigator.of(context).push(
                           MaterialPageRoute<void>(
-                            builder: (_) => RecipeDetailScreen(recipe: filtered[index].key),
+                            builder: (_) =>
+                                RecipeDetailScreen(recipe: filtered[index].key),
                           ),
                         );
                       },
                       onIncrement: () async {
-                        await ref.read(recipeRepositoryProvider).incrementCookingCount(filtered[index].key);
+                        await ref
+                            .read(recipeRepositoryProvider)
+                            .incrementCookingCount(filtered[index].key);
                       },
                       onEditCount: () async {
                         final recipe = filtered[index].key;
-                        final count = await showCountEditDialog(context, recipe.cookingCount);
+                        final count = await showCountEditDialog(
+                          context,
+                          recipe.cookingCount,
+                        );
                         if (count == null) {
                           return;
                         }
-                        await ref.read(recipeRepositoryProvider).setCookingCount(recipe, count);
+                        await ref
+                            .read(recipeRepositoryProvider)
+                            .setCookingCount(recipe, count);
                       },
                       onEdit: () {
                         Navigator.of(context).push(
                           MaterialPageRoute<void>(
-                            builder: (_) => RecipeFormScreen(recipe: filtered[index].key),
+                            builder: (_) =>
+                                RecipeFormScreen(recipe: filtered[index].key),
                           ),
                         );
                       },
                       onDelete: () => _deleteRecipe(filtered[index].key),
                     ),
-                    if (index != filtered.length - 1) const SizedBox(height: 14),
+                    if (index != filtered.length - 1)
+                      const SizedBox(height: 14),
                   ],
               ],
             );
@@ -251,6 +276,7 @@ class _RecipeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return SectionCard(
       padding: const EdgeInsets.all(14),
       child: InkWell(
@@ -270,14 +296,16 @@ class _RecipeCard extends StatelessWidget {
                     children: [
                       Text(
                         recipe.title,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 22),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.titleLarge?.copyWith(fontSize: 22),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         '${recipe.ingredients.length} ingrediencí',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: const Color(0xFF6E5C57),
-                            ),
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
                       const SizedBox(height: 10),
                       _CounterPill(
@@ -303,14 +331,15 @@ class _RecipeCard extends StatelessWidget {
                 ),
               ],
             ),
-            if (mode == RecipeMatchMode.partial && match.missingIngredients.isNotEmpty) ...[
+            if (mode == RecipeMatchMode.partial &&
+                match.missingIngredients.isNotEmpty) ...[
               const SizedBox(height: 14),
               Text(
                 'Chybí: ${match.missingIngredients.map(IngredientNameFormatter.prettify).join(', ')}',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: const Color(0xFFB63131),
-                      fontWeight: FontWeight.w700,
-                    ),
+                  color: colorScheme.error,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ],
           ],
@@ -350,25 +379,34 @@ class _CounterPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE0D1C8)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.local_fire_department_outlined, size: 16, color: Color(0xFFC65670)),
+          Icon(
+            Icons.local_fire_department_outlined,
+            size: 16,
+            color: colorScheme.primary,
+          ),
           const SizedBox(width: 6),
           Text('${count}x'),
           const SizedBox(width: 6),
           InkWell(
             onTap: onIncrement,
-            child: const Padding(
+            child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 4),
-              child: Icon(Icons.add_circle, size: 18, color: Color(0xFFC65670)),
+              child: Icon(
+                Icons.add_circle,
+                size: 18,
+                color: colorScheme.primary,
+              ),
             ),
           ),
           InkWell(

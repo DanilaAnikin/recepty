@@ -9,6 +9,7 @@ import '../../../shared/widgets/content_scaffold.dart';
 import '../../../shared/widgets/filter_pill.dart';
 import '../../../shared/widgets/search_input.dart';
 import '../../../shared/widgets/section_card.dart';
+import '../../../shared/widgets/theme_mode_button.dart';
 import '../../ingredients/application/ingredients_provider.dart';
 import '../application/pantry_provider.dart';
 
@@ -16,7 +17,8 @@ class PantrySelectorScreen extends ConsumerStatefulWidget {
   const PantrySelectorScreen({super.key});
 
   @override
-  ConsumerState<PantrySelectorScreen> createState() => _PantrySelectorScreenState();
+  ConsumerState<PantrySelectorScreen> createState() =>
+      _PantrySelectorScreenState();
 }
 
 class _PantrySelectorScreenState extends ConsumerState<PantrySelectorScreen> {
@@ -41,7 +43,9 @@ class _PantrySelectorScreenState extends ConsumerState<PantrySelectorScreen> {
     _initialized = true;
   }
 
-  List<IngredientEntity> _filterIngredients(List<IngredientEntity> ingredients) {
+  List<IngredientEntity> _filterIngredients(
+    List<IngredientEntity> ingredients,
+  ) {
     final query = TextNormalizer.normalize(_searchController.text);
     return ingredients.where((item) {
       final matchesQuery = query.isEmpty || item.normalizedName.contains(query);
@@ -68,14 +72,13 @@ class _PantrySelectorScreenState extends ConsumerState<PantrySelectorScreen> {
           appBar: AppBar(
             title: const Text('Co máš doma'),
             actions: [
-              TextButton(
-                onPressed: _save,
-                child: const Text('Uložit'),
-              ),
+              const ThemeModeButton(),
+              TextButton(onPressed: _save, child: const Text('Uložit')),
             ],
           ),
           body: ingredients.when(
             data: (items) {
+              final colorScheme = Theme.of(context).colorScheme;
               final filtered = _filterIngredients(items);
               return Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
@@ -98,13 +101,15 @@ class _PantrySelectorScreenState extends ConsumerState<PantrySelectorScreen> {
                                 selected: !_favoritesOnly,
                                 label: 'Vše',
                                 icon: Icons.check,
-                                onTap: () => setState(() => _favoritesOnly = false),
+                                onTap: () =>
+                                    setState(() => _favoritesOnly = false),
                               ),
                               FilterPill(
                                 selected: _favoritesOnly,
                                 label: 'Oblíbené',
                                 icon: Icons.favorite,
-                                onTap: () => setState(() => _favoritesOnly = true),
+                                onTap: () =>
+                                    setState(() => _favoritesOnly = true),
                               ),
                               FilterPill(
                                 selected: false,
@@ -128,9 +133,14 @@ class _PantrySelectorScreenState extends ConsumerState<PantrySelectorScreen> {
                             final selected = _draftSelection.contains(item.id);
                             return CheckboxListTile(
                               value: selected,
-                              title: Text(IngredientNameFormatter.prettify(item.name)),
+                              title: Text(
+                                IngredientNameFormatter.prettify(item.name),
+                              ),
                               secondary: item.isFavorite
-                                  ? const Icon(Icons.favorite, color: Color(0xFFC65670))
+                                  ? Icon(
+                                      Icons.favorite,
+                                      color: colorScheme.primary,
+                                    )
                                   : null,
                               controlAffinity: ListTileControlAffinity.leading,
                               onChanged: (_) {
@@ -156,7 +166,8 @@ class _PantrySelectorScreenState extends ConsumerState<PantrySelectorScreen> {
           ),
         );
       },
-      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (error, _) => Scaffold(body: Center(child: Text('$error'))),
     );
   }

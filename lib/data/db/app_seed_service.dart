@@ -14,12 +14,15 @@ class AppSeedService {
   final Database _db;
 
   Future<void> ensureSeedData() async {
-    final appliedVersion = (await metaStore.record(seedVersionKey).get(_db) as int?) ?? 0;
+    final appliedVersion =
+        (await metaStore.record(seedVersionKey).get(_db) as int?) ?? 0;
     if (appliedVersion >= _seedVersion) {
       return;
     }
 
-    final raw = await rootBundle.loadString('assets/seeds/default_ingredients_v1.json');
+    final raw = await rootBundle.loadString(
+      'assets/seeds/default_ingredients_v1.json',
+    );
     final decoded = (jsonDecode(raw) as List<dynamic>).cast<String>();
     final existingSnapshots = await ingredientsStore.find(_db);
     final existingNormalizedNames = existingSnapshots

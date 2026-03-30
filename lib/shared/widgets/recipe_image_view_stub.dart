@@ -8,6 +8,24 @@ Widget buildRecipeImageView({
   required double borderRadius,
   required IconData placeholderIcon,
 }) {
+  Widget placeholder(BuildContext context, {IconData? icon}) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.92),
+        borderRadius: BorderRadius.circular(borderRadius),
+        border: Border.all(color: colorScheme.outlineVariant),
+      ),
+      child: Icon(
+        icon ?? placeholderIcon,
+        size: 34,
+        color: colorScheme.onSurfaceVariant,
+      ),
+    );
+  }
+
   if (path != null && path.startsWith('data:image/')) {
     final commaIndex = path.indexOf(',');
     final payload = commaIndex == -1 ? '' : path.substring(commaIndex + 1);
@@ -22,14 +40,5 @@ Widget buildRecipeImageView({
     );
   }
 
-  return Container(
-    width: width,
-    height: height,
-    decoration: BoxDecoration(
-      color: Colors.white.withValues(alpha: 0.92),
-      borderRadius: BorderRadius.circular(borderRadius),
-      border: Border.all(color: const Color(0xFFE0D1C8)),
-    ),
-    child: Icon(placeholderIcon, size: 34),
-  );
+  return Builder(builder: placeholder);
 }

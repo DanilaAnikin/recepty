@@ -9,9 +9,7 @@ Future<void> main() async {
   final bootstrap = await AppBootstrap.create();
   runApp(
     ProviderScope(
-      overrides: [
-        appBootstrapProvider.overrideWithValue(bootstrap),
-      ],
+      overrides: [appBootstrapProvider.overrideWithValue(bootstrap)],
       child: const ReceptyTerinkyApp(),
     ),
   );

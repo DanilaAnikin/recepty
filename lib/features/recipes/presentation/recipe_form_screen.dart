@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/constants/app_units.dart';
-import '../../../core/utils/formatters.dart';
 import '../../../core/utils/ingredient_name_formatter.dart';
 import '../../../core/utils/text_normalizer.dart';
 import '../../../data/db/repository_providers.dart';
@@ -12,6 +11,7 @@ import '../../../data/models/recipe_entity.dart';
 import '../../../shared/widgets/content_scaffold.dart';
 import '../../../shared/widgets/recipe_image_view.dart';
 import '../../../shared/widgets/section_card.dart';
+import '../../../shared/widgets/theme_mode_button.dart';
 import '../../ingredients/application/ingredients_provider.dart';
 import '../application/recipe_image_storage_provider.dart';
 import 'ingredient_picker_dialog.dart';
@@ -49,7 +49,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
           _DraftRecipeIngredient(
             ingredientId: item.ingredientId,
             ingredientName: item.ingredientNameSnapshot,
-            amountController: TextEditingController(text: formatAmount(item.amount)),
+            amountController: TextEditingController(text: item.amountText),
             unit: item.unit,
           ),
         );
@@ -71,11 +71,16 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
   }
 
   Future<void> _pickImage() async {
-    final image = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 88);
+    final image = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 88,
+    );
     if (image == null) {
       return;
     }
-    final encodedImage = await ref.read(recipeImageStorageProvider).persistXFile(image);
+    final encodedImage = await ref
+        .read(recipeImageStorageProvider)
+        .persistXFile(image);
     setState(() {
       _imagePath = encodedImage;
     });
@@ -86,11 +91,12 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
       return;
     }
 
-    final validRows = _ingredients.where((item) => item.ingredientId != null).toList();
+    final validRows = _ingredients
+        .where((item) => item.ingredientId != null)
+        .toList();
     if (validRows.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Přidej alespoň jednu ingredienci.')),
-        
       );
       return;
     }
@@ -101,14 +107,11 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
       final ingredient = ingredientMap[row.ingredientId];
       if (ingredient == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Některá ingredience už v seznamu neexistuje. Vyber ji znovu.')),
-        );
-        return;
-      }
-      final amount = double.tryParse(row.amountController.text.replaceAll(',', '.'));
-      if (amount == null || amount <= 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Množství musí být větší než 0.')),
+          const SnackBar(
+            content: Text(
+              'Některá ingredience už v seznamu neexistuje. Vyber ji znovu.',
+            ),
+          ),
         );
         return;
       }
@@ -118,7 +121,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
           ingredientId: ingredient.id,
           ingredientNameSnapshot: ingredient.name,
           normalizedIngredientName: ingredient.normalizedName,
-          amount: amount,
+          amountText: row.amountController.text.trim(),
           unit: row.unit,
         ),
       );
@@ -171,6 +174,7 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
     return ContentScaffold(
       appBar: AppBar(
         title: Text(widget.isEditing ? 'Upravit recept' : 'Nový recept'),
+        actions: const [ThemeModeButton()],
       ),
       body: ingredients.when(
         data: (allIngredients) {
@@ -185,7 +189,9 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                     children: [
                       TextFormField(
                         controller: _titleController,
-                        decoration: const InputDecoration(labelText: 'Název receptu'),
+                        decoration: const InputDecoration(
+                          labelText: 'Název receptu',
+                        ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
                             return 'Zadej název receptu.';
@@ -198,7 +204,9 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                         controller: _descriptionController,
                         maxLines: 5,
                         minLines: 3,
-                        decoration: const InputDecoration(labelText: 'Postup nebo poznámka'),
+                        decoration: const InputDecoration(
+                          labelText: 'Postup nebo poznámka',
+                        ),
                       ),
                       const SizedBox(height: 14),
                       Wrap(
@@ -214,7 +222,8 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                           ),
                           if (_imagePath != null)
                             TextButton.icon(
-                              onPressed: () => setState(() => _imagePath = null),
+                              onPressed: () =>
+                                  setState(() => _imagePath = null),
                               icon: const Icon(Icons.delete_outline),
                               label: const Text('Odebrat fotku'),
                             ),
@@ -239,7 +248,10 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                           FilledButton.tonalIcon(
                             onPressed: () {
                               setState(() {
-                                _ingredients.add(_DraftRecipeIngredient.empty());
+                                _ingredients.insert(
+                                  0,
+                                  _DraftRecipeIngredient.empty(),
+                                );
                               });
                             },
                             icon: const Icon(Icons.add),
@@ -248,11 +260,17 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      for (var index = 0; index < _ingredients.length; index++) ...[
+                      for (
+                        var index = 0;
+                        index < _ingredients.length;
+                        index++
+                      ) ...[
                         _RecipeIngredientRow(
                           value: _ingredients[index],
                           onPickIngredient: () async {
-                            final ingredient = await showIngredientPickerDialog(context);
+                            final ingredient = await showIngredientPickerDialog(
+                              context,
+                            );
                             if (ingredient == null) {
                               return;
                             }
@@ -262,17 +280,21 @@ class _RecipeFormScreenState extends ConsumerState<RecipeFormScreen> {
                                 ..ingredientName = ingredient.name;
                             });
                           },
-                          onUnitChanged: (unit) => setState(() => _ingredients[index].unit = unit),
+                          onUnitChanged: (unit) =>
+                              setState(() => _ingredients[index].unit = unit),
                           onRemove: _ingredients.length == 1
                               ? null
                               : () {
                                   setState(() {
-                                    final removed = _ingredients.removeAt(index);
+                                    final removed = _ingredients.removeAt(
+                                      index,
+                                    );
                                     removed.amountController.dispose();
                                   });
                                 },
                         ),
-                        if (index < _ingredients.length - 1) const Divider(height: 24),
+                        if (index < _ingredients.length - 1)
+                          const Divider(height: 24),
                       ],
                     ],
                   ),
@@ -336,7 +358,9 @@ class _RecipeIngredientRow extends StatelessWidget {
                 ? 'Vyber ingredienci'
                 : IngredientNameFormatter.prettify(value.ingredientName!),
           ),
-          subtitle: value.ingredientName == null ? const Text('Klepni a vyber ingredienci') : null,
+          subtitle: value.ingredientName == null
+              ? const Text('Klepni a vyber nebo vytvoř ingredienci')
+              : null,
           leading: const Icon(Icons.restaurant_menu),
           trailing: const Icon(Icons.chevron_right),
           onTap: onPickIngredient,
@@ -347,25 +371,20 @@ class _RecipeIngredientRow extends StatelessWidget {
                 children: [
                   TextFormField(
                     controller: value.amountController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: TextInputType.text,
                     decoration: const InputDecoration(labelText: 'Množství'),
-                    validator: (text) {
-                      if ((value.ingredientId == null) && (text == null || text.isEmpty)) {
-                        return null;
-                      }
-                      final amount = double.tryParse((text ?? '').replaceAll(',', '.'));
-                      if (amount == null || amount <= 0) {
-                        return 'Zadej množství.';
-                      }
-                      return null;
-                    },
                   ),
                   const SizedBox(height: 10),
                   DropdownButtonFormField<IngredientUnit>(
                     initialValue: value.unit,
                     decoration: const InputDecoration(labelText: 'Jednotka'),
                     items: IngredientUnit.values
-                        .map((unit) => DropdownMenuItem(value: unit, child: Text(unit.label)))
+                        .map(
+                          (unit) => DropdownMenuItem(
+                            value: unit,
+                            child: Text(unit.label),
+                          ),
+                        )
                         .toList(),
                     onChanged: (unit) {
                       if (unit != null) {
@@ -391,18 +410,8 @@ class _RecipeIngredientRow extends StatelessWidget {
                   Expanded(
                     child: TextFormField(
                       controller: value.amountController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: TextInputType.text,
                       decoration: const InputDecoration(labelText: 'Množství'),
-                      validator: (text) {
-                        if ((value.ingredientId == null) && (text == null || text.isEmpty)) {
-                          return null;
-                        }
-                        final amount = double.tryParse((text ?? '').replaceAll(',', '.'));
-                        if (amount == null || amount <= 0) {
-                          return 'Zadej množství.';
-                        }
-                        return null;
-                      },
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -411,7 +420,12 @@ class _RecipeIngredientRow extends StatelessWidget {
                       initialValue: value.unit,
                       decoration: const InputDecoration(labelText: 'Jednotka'),
                       items: IngredientUnit.values
-                          .map((unit) => DropdownMenuItem(value: unit, child: Text(unit.label)))
+                          .map(
+                            (unit) => DropdownMenuItem(
+                              value: unit,
+                              child: Text(unit.label),
+                            ),
+                          )
                           .toList(),
                       onChanged: (unit) {
                         if (unit != null) {

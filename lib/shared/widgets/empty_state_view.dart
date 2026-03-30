@@ -17,6 +17,7 @@ class EmptyStateView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
@@ -37,13 +38,12 @@ class EmptyStateView extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     message,
-                    style: theme.textTheme.bodyMedium?.copyWith(color: const Color(0xFF655752)),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                     textAlign: TextAlign.center,
                   ),
-                  if (action != null) ...[
-                    const SizedBox(height: 18),
-                    action!,
-                  ],
+                  if (action != null) ...[const SizedBox(height: 18), action!],
                 ],
               ),
             ),

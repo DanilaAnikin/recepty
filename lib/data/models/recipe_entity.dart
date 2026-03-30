@@ -5,14 +5,14 @@ class RecipeIngredientEmbedded {
     this.ingredientId,
     required this.ingredientNameSnapshot,
     required this.normalizedIngredientName,
-    required this.amount,
+    required this.amountText,
     required this.unit,
   });
 
   int? ingredientId;
   String ingredientNameSnapshot;
   String normalizedIngredientName;
-  double amount;
+  String amountText;
   IngredientUnit unit;
 
   factory RecipeIngredientEmbedded.fromMap(Map<String, Object?> map) {
@@ -20,7 +20,7 @@ class RecipeIngredientEmbedded {
       ingredientId: map['ingredientId'] as int?,
       ingredientNameSnapshot: map['ingredientNameSnapshot']! as String,
       normalizedIngredientName: map['normalizedIngredientName']! as String,
-      amount: (map['amount']! as num).toDouble(),
+      amountText: _deserializeAmountText(map),
       unit: IngredientUnit.values.byName(map['unit']! as String),
     );
   }
@@ -30,9 +30,32 @@ class RecipeIngredientEmbedded {
       'ingredientId': ingredientId,
       'ingredientNameSnapshot': ingredientNameSnapshot,
       'normalizedIngredientName': normalizedIngredientName,
-      'amount': amount,
+      'amountText': amountText,
       'unit': unit.name,
     };
+  }
+
+  static String _deserializeAmountText(Map<String, Object?> map) {
+    final rawText = map['amountText'];
+    if (rawText is String) {
+      return rawText;
+    }
+
+    final legacyAmount = map['amount'];
+    if (legacyAmount is int) {
+      return legacyAmount.toString();
+    }
+    if (legacyAmount is double) {
+      if (legacyAmount == legacyAmount.roundToDouble()) {
+        return legacyAmount.toStringAsFixed(0);
+      }
+      return legacyAmount
+          .toStringAsFixed(2)
+          .replaceFirst(RegExp(r'0+$'), '')
+          .replaceFirst(RegExp(r'\.$'), '');
+    }
+
+    return '';
   }
 }
 
@@ -47,9 +70,9 @@ class RecipeEntity {
     DateTime? createdAt,
     DateTime? updatedAt,
     List<RecipeIngredientEmbedded>? ingredients,
-  })  : createdAt = createdAt ?? DateTime.now(),
-        updatedAt = updatedAt ?? DateTime.now(),
-        ingredients = ingredients ?? [];
+  }) : createdAt = createdAt ?? DateTime.now(),
+       updatedAt = updatedAt ?? DateTime.now(),
+       ingredients = ingredients ?? [];
 
   int id;
   String normalizedTitle;
