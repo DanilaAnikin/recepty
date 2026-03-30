@@ -33,6 +33,12 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Node / Next.js
+node_modules/
+.next/
+out/
+npm-debug.log*
+
 # Symbolication related
 app.*.symbols
 

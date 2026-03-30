@@ -1,38 +1,48 @@
 # Recepty Terinky
 
-Flutter project bootstrap prepared on Linux for Android, Web and later iOS builds in Codemagic.
+Next.js verze aplikace pro recepty, ingredience, domácí zásoby a přepínatelný dark mode.
 
-## Current state
+## Stack
 
-- Flutter project created in this directory
-- Platforms enabled: `android`, `ios`, `web`
-- iOS bundle identifier: `com.teriprojekt.teriprojekt`
-- Basic Codemagic configuration added in `codemagic.yaml`
+- Next.js App Router
+- React 19
+- TypeScript
+- klientská perzistence do `localStorage`
 
-## Local development
+## Lokální vývoj
+
+Doporučený Node runtime je `22.x`.
 
 ```bash
-flutter pub get
-flutter analyze
-flutter test
-flutter run -d chrome
-flutter run -d android
+nvm use
+npm install
+npm run dev
 ```
 
-## Codemagic
+## Kontrola
 
-The repository contains two workflows:
+```bash
+npm run lint
+npm run build
+```
 
-- `validate`: Linux workflow for `pub get`, `analyze`, `test`
-- `ios_testflight`: macOS workflow for signed iOS IPA build
+Poznámka k tomuto stroji:
+Lokální build byl ověřený pod Node `22.13.1`. V tomto konkrétním prostředí padal nativní SWC binding, takže pro ověření byl použit build s `NEXT_TEST_WASM=1 npm run build`. Na Vercelu má projekt běžet jako standardní Next.js app.
 
-Before the iOS workflow can work, you still need to connect Apple credentials in Codemagic:
+## Nasazení na Vercel
 
-1. Create or use an Apple Developer account membership.
-2. Create an App Store Connect API key.
-3. Add that key in Codemagic under Developer Portal integrations with the name `codemagic`, or rename the value in `codemagic.yaml`.
-4. Set up code signing assets for bundle id `com.teriprojekt.teriprojekt`.
+1. Pushni repo.
+2. Ve Vercelu nastav framework na `Next.js` nebo nech autodetekci.
+3. Použij Node `22.x`.
+4. Není potřeba vlastní build command ani output directory.
 
-## Next step
+## Datový model
 
-Define what the app should do and then replace the default Flutter counter template with the real MVP.
+Aplikace si na klientovi ukládá:
+
+- seznam ingrediencí
+- recepty včetně obrázků uložených jako data URL
+- domácí zásoby
+- volbu theme modu
+
+Při prvním spuštění se automaticky seeduje základní seznam ingrediencí z `assets/seeds/default_ingredients_v1.json`.
