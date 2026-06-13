@@ -962,7 +962,7 @@ export function ReceptyTerinkyApp() {
         </section>
 
         {activeTab === "recipes" ? (
-          <section className="content-stack">
+          <section key="recipes-tab" className="content-stack">
             <div className="section-intro">
               <div>
                 <p className="section-eyebrow">Recepty</p>
@@ -1208,7 +1208,7 @@ export function ReceptyTerinkyApp() {
             </button>
           </section>
         ) : (
-          <section className="content-stack">
+          <section key="ingredients-tab" className="content-stack">
             <div className="section-intro">
               <div>
                 <p className="section-eyebrow">Ingredience</p>
