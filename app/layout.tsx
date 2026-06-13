@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Manrope } from "next/font/google";
 import Script from "next/script";
 
@@ -40,6 +40,32 @@ const themeBootstrapScript = `
 export const metadata: Metadata = {
   title: "Recepty Terinky",
   description: "Domácí kuchařka na recepty, ingredience a zásoby.",
+  manifest: "/manifest.webmanifest",
+  applicationName: "Recepty Terinky",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Recepty Terinky",
+  },
+  icons: {
+    icon: "/icon.png",
+    apple: "/icon.png",
+  },
+  openGraph: {
+    title: "Recepty Terinky",
+    description: "Domácí kuchařka na recepty, ingredience a zásoby.",
+    type: "website",
+    locale: "cs_CZ",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fff6f2" },
+    { media: "(prefers-color-scheme: dark)", color: "#171315" },
+  ],
 };
 
 export default function RootLayout({

@@ -1,0 +1,25 @@
+{
+  "name": "Recepty Terinky",
+  "short_name": "Recepty",
+  "description": "Domácí kuchařka na recepty, ingredience a zásoby.",
+  "lang": "cs",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fff6f2",
+  "theme_color": "#c65670",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

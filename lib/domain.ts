@@ -1,7 +1,17 @@
 import defaultIngredients from "../assets/seeds/default_ingredients_v1.json";
 
 export const STORAGE_KEY = "recepty-terinky.next.v1";
+export const BACKUP_KEY = "recepty-terinky.next.v1.corrupt-backup";
 export const SEED_VERSION = 1;
+
+export const RECIPE_SORT_MODES = [
+  { value: "alphabetical", label: "Abecedně" },
+  { value: "mostCooked", label: "Nejvařenější" },
+  { value: "recentlyUpdated", label: "Naposledy upravené" },
+  { value: "favoritesFirst", label: "Oblíbené" },
+] as const;
+
+export type RecipeSortMode = (typeof RECIPE_SORT_MODES)[number]["value"];
 
 export const INGREDIENT_UNITS = [
   { value: "g", label: "g" },
@@ -52,6 +62,11 @@ export type Recipe = {
   createdAt: string;
   updatedAt: string;
   ingredients: RecipeIngredient[];
+  servings?: number;
+  prepTimeMinutes?: number;
+  cookTimeMinutes?: number;
+  isFavorite?: boolean;
+  tags?: string[];
 };
 
 export type AppState = {
@@ -60,6 +75,7 @@ export type AppState = {
   recipes: Recipe[];
   pantrySelection: number[];
   themeMode: ThemeModeOption;
+  recipeSortMode: RecipeSortMode;
 };
 
 export type RecipeMatchResult = {
@@ -108,6 +124,112 @@ export function sortRecipes(items: Recipe[]): Recipe[] {
   });
 }
 
+export function sortRecipesBy(items: Recipe[], mode: RecipeSortMode): Recipe[] {
+  const alphabetical = sortRecipes(items);
+
+  switch (mode) {
+    case "mostCooked":
+      return [...alphabetical].sort((left, right) => {
+        const countCompare = right.cookingCount - left.cookingCount;
+        if (countCompare !== 0) {
+          return countCompare;
+        }
+        return collator.compare(left.normalizedTitle, right.normalizedTitle);
+      });
+    case "recentlyUpdated":
+      return [...alphabetical].sort((left, right) => {
+        return right.updatedAt.localeCompare(left.updatedAt);
+      });
+    case "favoritesFirst":
+      return [...alphabetical].sort((left, right) => {
+        const leftFavorite = left.isFavorite === true ? 0 : 1;
+        const rightFavorite = right.isFavorite === true ? 0 : 1;
+        if (leftFavorite !== rightFavorite) {
+          return leftFavorite - rightFavorite;
+        }
+        return collator.compare(left.normalizedTitle, right.normalizedTitle);
+      });
+    case "alphabetical":
+    default:
+      return alphabetical;
+  }
+}
+
+export function scaleAmount(amountText: string, factor: number): string {
+  if (!Number.isFinite(factor) || factor <= 0) {
+    return amountText;
+  }
+
+  const trimmed = amountText.trim();
+  if (trimmed.length === 0) {
+    return amountText;
+  }
+
+  const formatNumber = (value: number, usesComma: boolean): string => {
+    const rounded = Math.round(value * 100) / 100;
+    let text = rounded.toFixed(2).replace(/\.?0+$/, "");
+    if (usesComma) {
+      text = text.replace(".", ",");
+    }
+    return text;
+  };
+
+  const parseNumber = (raw: string): number | null => {
+    const normalized = raw.replace(",", ".");
+    if (!/^\d+(\.\d+)?$/.test(normalized)) {
+      return null;
+    }
+    const value = Number.parseFloat(normalized);
+    return Number.isFinite(value) ? value : null;
+  };
+
+  // Rozsah: "x-y" nebo "x–y" (pomlčka i en dash).
+  const rangeMatch = trimmed.match(/^(\d+(?:[.,]\d+)?)\s*([-–])\s*(\d+(?:[.,]\d+)?)$/);
+  if (rangeMatch) {
+    const leftRaw = rangeMatch[1];
+    const separator = rangeMatch[2];
+    const rightRaw = rangeMatch[3];
+    const leftValue = parseNumber(leftRaw);
+    const rightValue = parseNumber(rightRaw);
+    if (leftValue !== null && rightValue !== null) {
+      const leftComma = leftRaw.includes(",");
+      const rightComma = rightRaw.includes(",");
+      return `${formatNumber(leftValue * factor, leftComma)}${separator}${formatNumber(
+        rightValue * factor,
+        rightComma,
+      )}`;
+    }
+    return amountText;
+  }
+
+  // Jednoduchý zlomek: "a/b".
+  const fractionMatch = trimmed.match(/^(\d+(?:[.,]\d+)?)\s*\/\s*(\d+(?:[.,]\d+)?)$/);
+  if (fractionMatch) {
+    const numeratorRaw = fractionMatch[1];
+    const denominatorRaw = fractionMatch[2];
+    const numerator = parseNumber(numeratorRaw);
+    const denominator = parseNumber(denominatorRaw);
+    if (numerator !== null && denominator !== null) {
+      const numeratorComma = numeratorRaw.includes(",");
+      return `${formatNumber(numerator * factor, numeratorComma)}/${denominatorRaw}`;
+    }
+    return amountText;
+  }
+
+  // Čisté číslo (desetinné s tečkou nebo čárkou).
+  const single = parseNumber(trimmed);
+  if (single !== null) {
+    return formatNumber(single * factor, trimmed.includes(","));
+  }
+
+  // Cokoli jiného (spetka, dle chuti, písmena) — beze změny.
+  return amountText;
+}
+
+export function exportStateToJson(state: AppState): string {
+  return JSON.stringify(state, null, 2);
+}
+
 export function getNextId(values: number[]): number {
   return values.reduce((max, value) => Math.max(max, value), 0) + 1;
 }
@@ -119,6 +241,7 @@ export function createInitialState(): AppState {
     recipes: [],
     pantrySelection: [],
     themeMode: "system",
+    recipeSortMode: "alphabetical",
   };
 }
 
@@ -188,6 +311,15 @@ export function parseStoredState(raw: string | null): AppState {
           ...recipe,
           normalizedTitle: normalizeText(recipe.title),
           ingredients: recipe.ingredients.filter(isRecipeIngredient),
+          isFavorite: recipe.isFavorite === true,
+          tags: Array.isArray(recipe.tags)
+            ? recipe.tags.filter((tag): tag is string => typeof tag === "string")
+            : [],
+          servings: typeof recipe.servings === "number" ? recipe.servings : undefined,
+          prepTimeMinutes:
+            typeof recipe.prepTimeMinutes === "number" ? recipe.prepTimeMinutes : undefined,
+          cookTimeMinutes:
+            typeof recipe.cookTimeMinutes === "number" ? recipe.cookTimeMinutes : undefined,
         }))
       : [];
 
@@ -201,10 +333,21 @@ export function parseStoredState(raw: string | null): AppState {
       recipes,
       pantrySelection,
       themeMode: isThemeModeOption(decoded.themeMode) ? decoded.themeMode : "system",
+      recipeSortMode: isRecipeSortMode(decoded.recipeSortMode)
+        ? decoded.recipeSortMode
+        : "alphabetical",
     };
 
     return ensureSeedData(nextState);
-  } catch {
+  } catch (error) {
+    console.error("Recepty Terinky: poškozená data v localStorage", error);
+    if (raw && typeof window !== "undefined") {
+      try {
+        localStorage.setItem(BACKUP_KEY, raw);
+      } catch {
+        // Kvóta localStorage může selhat — záloha je best-effort, chybu ignorujeme.
+      }
+    }
     return createInitialState();
   }
 }
@@ -297,6 +440,10 @@ function seedIngredients(): Ingredient[] {
 
 function isThemeModeOption(value: unknown): value is ThemeModeOption {
   return value === "system" || value === "light" || value === "dark";
+}
+
+function isRecipeSortMode(value: unknown): value is RecipeSortMode {
+  return RECIPE_SORT_MODES.some((mode) => mode.value === value);
 }
 
 function isIngredient(value: unknown): value is Ingredient {

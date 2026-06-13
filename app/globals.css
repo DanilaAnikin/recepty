@@ -295,7 +295,7 @@ img {
 .field-stack textarea:focus,
 .field-stack select:focus {
   border-color: color-mix(in srgb, var(--primary) 56%, transparent);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 18%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 28%, transparent);
 }
 
 .toolbar-wrap,
@@ -542,6 +542,10 @@ img {
 .checkbox-row span,
 .picker-row span {
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .picker-row {
@@ -906,7 +910,7 @@ img {
 
   .bottom-nav {
     display: flex;
-    width: calc(100vw - 16px);
+    width: calc(100% - 16px);
     justify-content: space-between;
   }
 
@@ -924,4 +928,193 @@ img {
   .hero-footnote {
     text-align: left;
   }
+}
+
+/* === A11y: viditelny focus ring pro interaktivni prvky === */
+.primary-button:focus-visible,
+.secondary-button:focus-visible,
+.ghost-button:focus-visible,
+.file-button:focus-visible,
+.tab-button:focus-visible,
+.segment-button:focus-visible,
+.pill-button:focus-visible,
+.icon-button:focus-visible,
+.ingredient-pick-button:focus-visible,
+.picker-row:focus-visible,
+.bottom-nav-button:focus-visible,
+.recipe-card-main:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* === Modal Zalohovani dat === */
+.backup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.backup-actions .primary-button,
+.backup-actions .secondary-button {
+  flex: 1 1 180px;
+}
+
+.backup-file-input {
+  display: none;
+}
+
+/* === ConfirmDialog === */
+.confirm-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.confirm-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--danger);
+}
+
+.confirm-message {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+/* === Toast se zpravou a akci === */
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toast-message {
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.toast-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: var(--primary);
+  color: var(--primary-contrast);
+  font-weight: 700;
+  transition:
+    transform 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.toast-action:hover {
+  transform: translateY(-1px);
+  background: var(--primary-strong);
+}
+
+.toast-action:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* === Razeni receptu (select v toolbaru) === */
+.recipe-sort-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--surface-border);
+  background: var(--surface-muted);
+  color: var(--text-muted);
+}
+
+.recipe-sort-label {
+  font-weight: 700;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.recipe-sort-select select {
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-weight: 700;
+  padding: 4px 2px;
+  cursor: pointer;
+}
+
+.recipe-sort-select:focus-within {
+  border-color: color-mix(in srgb, var(--primary) 56%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 28%, transparent);
+}
+
+/* === Oblibene tlacitko v detailu receptu === */
+.favorite-button.active {
+  background: var(--primary);
+  color: var(--primary-contrast);
+  border-color: transparent;
+}
+
+/* === Meta radek na karte receptu (cas, porce) === */
+.recipe-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.recipe-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* === Chipy stitku === */
+.tag-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  border: 1px solid var(--surface-border);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+/* === Stepper porci v detailu === */
+.servings-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.servings-stepper-label {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.servings-stepper-value {
+  min-width: 2ch;
+  text-align: center;
+  font-weight: 700;
+  color: var(--text);
 }
