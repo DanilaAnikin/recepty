@@ -1,8 +1,22 @@
 import defaultIngredients from "../assets/seeds/default_ingredients_v1.json";
+import defaultRecipes from "../assets/seeds/default_recipes_v1.json";
 
 export const STORAGE_KEY = "recepty-terinky.next.v1";
 export const BACKUP_KEY = "recepty-terinky.next.v1.corrupt-backup";
 export const SEED_VERSION = 1;
+export const RECIPE_SEED_VERSION = 1;
+
+export type RecipeSeed = {
+  title: string;
+  description: string;
+  steps: string[];
+  servings: number;
+  prepTimeMinutes: number;
+  cookTimeMinutes: number;
+  tags: string[];
+  ingredients: { name: string; amount: string; unit: IngredientUnit }[];
+  imageUrls: string[];
+};
 
 export const RECIPE_SORT_MODES = [
   { value: "alphabetical", label: "Abecedně" },
@@ -67,10 +81,13 @@ export type Recipe = {
   cookTimeMinutes?: number;
   isFavorite?: boolean;
   tags?: string[];
+  steps?: string[];
+  imageUrls?: string[];
 };
 
 export type AppState = {
   seedVersion: number;
+  recipeSeedVersion: number;
   ingredients: Ingredient[];
   recipes: Recipe[];
   pantrySelection: number[];
@@ -237,6 +254,7 @@ export function getNextId(values: number[]): number {
 export function createInitialState(): AppState {
   return {
     seedVersion: SEED_VERSION,
+    recipeSeedVersion: 0,
     ingredients: seedIngredients(),
     recipes: [],
     pantrySelection: [],
@@ -250,8 +268,9 @@ export function ensureSeedData(state: AppState): AppState {
   const missingSeedNames = (defaultIngredients as string[]).filter((item) => {
     return !existingNormalizedNames.has(normalizeText(item));
   });
+  const needRecipeSeed = (state.recipeSeedVersion ?? 0) < RECIPE_SEED_VERSION;
 
-  if (missingSeedNames.length === 0 && state.seedVersion >= SEED_VERSION) {
+  if (missingSeedNames.length === 0 && state.seedVersion >= SEED_VERSION && !needRecipeSeed) {
     return {
       ...state,
       ingredients: sortIngredients(state.ingredients),
@@ -260,6 +279,7 @@ export function ensureSeedData(state: AppState): AppState {
     };
   }
 
+  // 1) Dolij chybějící seed ingredience.
   let nextId = getNextId(state.ingredients.map((item) => item.id));
   const seededIngredients = missingSeedNames.map((rawName) => {
     const now = new Date().toISOString();
@@ -275,14 +295,96 @@ export function ensureSeedData(state: AppState): AppState {
     };
     return ingredient;
   });
+  let ingredients = [...state.ingredients, ...seededIngredients];
+
+  // 2) Dolij defaultní recepty (jednou dle RECIPE_SEED_VERSION, dedup dle názvu).
+  //    Chybějící ingredience receptů se zároveň vytvoří v seznamu.
+  let recipes = state.recipes;
+  if (needRecipeSeed) {
+    const applied = applyRecipeSeed(ingredients, recipes);
+    ingredients = applied.ingredients;
+    recipes = applied.recipes;
+  }
 
   return {
     ...state,
     seedVersion: SEED_VERSION,
-    ingredients: sortIngredients([...state.ingredients, ...seededIngredients]),
-    recipes: sortRecipes(state.recipes),
+    recipeSeedVersion: RECIPE_SEED_VERSION,
+    ingredients: sortIngredients(ingredients),
+    recipes: sortRecipes(recipes),
     pantrySelection: [...state.pantrySelection].sort((left, right) => left - right),
   };
+}
+
+function applyRecipeSeed(
+  ingredients: Ingredient[],
+  recipes: Recipe[],
+): { ingredients: Ingredient[]; recipes: Recipe[] } {
+  const existingTitles = new Set(recipes.map((recipe) => recipe.normalizedTitle));
+  const nextIngredients = [...ingredients];
+  const byNormalizedName = new Map(nextIngredients.map((item) => [item.normalizedName, item]));
+  let nextIngredientId = getNextId(nextIngredients.map((item) => item.id));
+  let nextRecipeId = getNextId(recipes.map((recipe) => recipe.id));
+  const now = new Date().toISOString();
+  const newRecipes: Recipe[] = [];
+
+  for (const seed of defaultRecipes as RecipeSeed[]) {
+    const normalizedTitle = normalizeText(seed.title);
+    if (existingTitles.has(normalizedTitle)) {
+      continue;
+    }
+    existingTitles.add(normalizedTitle);
+
+    const embeddedIngredients: RecipeIngredient[] = seed.ingredients.map((seedIngredient) => {
+      const normalizedName = normalizeText(seedIngredient.name);
+      let ingredient = byNormalizedName.get(normalizedName);
+      if (!ingredient) {
+        ingredient = {
+          id: nextIngredientId++,
+          normalizedName,
+          name: prettifyIngredientName(seedIngredient.name),
+          firstLetter: firstLetter(seedIngredient.name),
+          isFavorite: false,
+          isSystem: true,
+          createdAt: now,
+          updatedAt: now,
+        };
+        byNormalizedName.set(normalizedName, ingredient);
+        nextIngredients.push(ingredient);
+      }
+      return {
+        ingredientId: ingredient.id,
+        // V receptu zobrazujeme pěkný název s diakritikou ze seedu receptu i
+        // tehdy, když se napároval na starší (bez diakritiky) seed ingredienci;
+        // párování přes ingredientId zůstává.
+        ingredientNameSnapshot: prettifyIngredientName(seedIngredient.name),
+        normalizedIngredientName: ingredient.normalizedName,
+        amountText: seedIngredient.amount,
+        unit: seedIngredient.unit,
+      };
+    });
+
+    newRecipes.push({
+      id: nextRecipeId++,
+      title: seed.title,
+      normalizedTitle,
+      description: seed.description,
+      imagePath: null,
+      imageUrls: seed.imageUrls,
+      steps: seed.steps,
+      cookingCount: 0,
+      createdAt: now,
+      updatedAt: now,
+      ingredients: embeddedIngredients,
+      servings: seed.servings,
+      prepTimeMinutes: seed.prepTimeMinutes,
+      cookTimeMinutes: seed.cookTimeMinutes,
+      isFavorite: false,
+      tags: seed.tags,
+    });
+  }
+
+  return { ingredients: nextIngredients, recipes: [...recipes, ...newRecipes] };
 }
 
 export function parseStoredState(raw: string | null): AppState {
@@ -320,6 +422,12 @@ export function parseStoredState(raw: string | null): AppState {
             typeof recipe.prepTimeMinutes === "number" ? recipe.prepTimeMinutes : undefined,
           cookTimeMinutes:
             typeof recipe.cookTimeMinutes === "number" ? recipe.cookTimeMinutes : undefined,
+          steps: Array.isArray(recipe.steps)
+            ? recipe.steps.filter((step): step is string => typeof step === "string")
+            : [],
+          imageUrls: Array.isArray(recipe.imageUrls)
+            ? recipe.imageUrls.filter((url): url is string => typeof url === "string")
+            : [],
         }))
       : [];
 
@@ -329,6 +437,8 @@ export function parseStoredState(raw: string | null): AppState {
 
     const nextState: AppState = {
       seedVersion: typeof decoded.seedVersion === "number" ? decoded.seedVersion : 0,
+      recipeSeedVersion:
+        typeof decoded.recipeSeedVersion === "number" ? decoded.recipeSeedVersion : 0,
       ingredients,
       recipes,
       pantrySelection,

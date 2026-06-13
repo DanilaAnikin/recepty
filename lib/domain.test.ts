@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import defaultIngredients from "../assets/seeds/default_ingredients_v1.json";
+import defaultRecipes from "../assets/seeds/default_recipes_v1.json";
 import {
   normalizeText,
   prettifyIngredientName,
@@ -16,6 +17,7 @@ import {
   getUnitLabel,
   resolveTheme,
   SEED_VERSION,
+  RECIPE_SEED_VERSION,
   type Ingredient,
   type Recipe,
   type RecipeIngredient,
@@ -684,6 +686,8 @@ describe("parseStoredState", () => {
 
   it("(e2) drops invalid recipe/ingredient entries", () => {
     const raw = JSON.stringify({
+      // Recepty už naseedované, ať se netestuje proti default receptům.
+      recipeSeedVersion: RECIPE_SEED_VERSION,
       ingredients: [
         { id: 1, name: "Valid", createdAt: "x", updatedAt: "y" },
         { id: "not-a-number", name: "Invalid" }, // bad id
@@ -760,6 +764,7 @@ describe("ensureSeedData", () => {
   it("adds all missing seed ingredients to an empty state", () => {
     const state: AppState = {
       seedVersion: 0,
+      recipeSeedVersion: RECIPE_SEED_VERSION,
       ingredients: [],
       recipes: [],
       pantrySelection: [],
@@ -779,6 +784,7 @@ describe("ensureSeedData", () => {
     });
     const state: AppState = {
       seedVersion: SEED_VERSION,
+      recipeSeedVersion: RECIPE_SEED_VERSION,
       ingredients: [custom],
       recipes: [],
       pantrySelection: [],
@@ -800,6 +806,7 @@ describe("ensureSeedData", () => {
     });
     const state: AppState = {
       seedVersion: SEED_VERSION,
+      recipeSeedVersion: RECIPE_SEED_VERSION,
       ingredients: [existing],
       recipes: [],
       pantrySelection: [],
@@ -840,6 +847,7 @@ describe("ensureSeedData", () => {
     const seeded = createInitialState();
     const state: AppState = {
       ...seeded,
+      recipeSeedVersion: RECIPE_SEED_VERSION,
       recipes: [
         makeRecipe({ id: 1, title: "Štrúdl" }),
         makeRecipe({ id: 2, title: "Ananasový dort" }),
@@ -868,6 +876,63 @@ describe("ensureSeedData", () => {
     ensureSeedData(state);
     expect(state.ingredients.length).toBe(before);
     expect(state.pantrySelection).toEqual([3, 1]); // untouched
+  });
+});
+
+// ---------------------------------------------------------------------------
+// default recipe seeding
+// ---------------------------------------------------------------------------
+
+describe("default recipe seeding", () => {
+  const SEED_RECIPE_TITLES = (defaultRecipes as { title: string }[]).map((r) => r.title);
+
+  it("seeds all default recipes into a fresh state", () => {
+    const result = ensureSeedData(createInitialState());
+    expect(result.recipeSeedVersion).toBe(RECIPE_SEED_VERSION);
+    for (const title of SEED_RECIPE_TITLES) {
+      expect(result.recipes.some((r) => r.title === title)).toBe(true);
+    }
+    expect(result.recipes.length).toBeGreaterThanOrEqual(SEED_RECIPE_TITLES.length);
+  });
+
+  it("resolves every seeded recipe ingredient to an existing ingredient id", () => {
+    const result = ensureSeedData(createInitialState());
+    const ingredientIds = new Set(result.ingredients.map((i) => i.id));
+    const seededRecipes = result.recipes.filter((r) => SEED_RECIPE_TITLES.includes(r.title));
+    for (const recipe of seededRecipes) {
+      for (const ri of recipe.ingredients) {
+        expect(ri.ingredientId).not.toBeNull();
+        expect(ingredientIds.has(ri.ingredientId as number)).toBe(true);
+      }
+    }
+  });
+
+  it("seeded recipes carry steps and image urls", () => {
+    const result = ensureSeedData(createInitialState());
+    const seeded = result.recipes.filter((r) => SEED_RECIPE_TITLES.includes(r.title));
+    for (const recipe of seeded) {
+      expect((recipe.steps ?? []).length).toBeGreaterThan(0);
+      expect((recipe.imageUrls ?? []).length).toBeGreaterThan(0);
+    }
+  });
+
+  it("does not seed again once recipeSeedVersion is current", () => {
+    const once = ensureSeedData(createInitialState());
+    const beforeCount = once.recipes.length;
+    const twice = ensureSeedData(once);
+    expect(twice.recipes.length).toBe(beforeCount);
+  });
+
+  it("does not duplicate a default recipe the user already has (matched by title)", () => {
+    const state: AppState = {
+      ...createInitialState(),
+      recipes: [makeRecipe({ id: 1, title: SEED_RECIPE_TITLES[0] })],
+    };
+    const result = ensureSeedData(state);
+    const matching = result.recipes.filter(
+      (r) => normalizeText(r.title) === normalizeText(SEED_RECIPE_TITLES[0]),
+    );
+    expect(matching).toHaveLength(1);
   });
 });
 
@@ -931,7 +996,7 @@ describe("exportStateToJson", () => {
   });
 
   it("round-trips ingredients (custom + seeds remain consistent)", () => {
-    const state = createInitialState();
+    const state: AppState = { ...createInitialState(), recipeSeedVersion: RECIPE_SEED_VERSION };
     const json = exportStateToJson(state);
     const reparsed = parseStoredState(json);
     // The seeded ingredient set is stable across an export/import round-trip.

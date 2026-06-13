@@ -22,9 +22,10 @@ Osobní kuchařka / recipe manager pro jednoho uživatele (Terinku). Správa rec
 - **Mega-komponenta**: veškerá UI logika žije v `components/recepty-terinky-app.tsx` (1668 řádků, `"use client"`). Obsahuje správu stavu (useState), všechny handlery, všechny podkomponenty — vše v jednom souboru.
 - **Doménová vrstva**: `lib/domain.ts` (342 řádků) — typy (`Ingredient`, `Recipe`, `AppState`), serializace/deserializace localStorage, normalizace textu (české locale, `Intl.Collator("cs")`), seed logika, matching receptů.
 - **Seed data**: `assets/seeds/default_ingredients_v1.json` — 300+ defaultních ingrediencí v češtině. Při prvním načtení se naseedují do stavu; při upgrade `SEED_VERSION` se dolijou chybějící.
+- **Seed receptů**: `assets/seeds/default_recipes_v1.json` — 20 defaultních receptů (plná data: popis, kroky `steps[]`, čas, porce, tagy, ingredience, `imageUrls[]` z Unsplash CDN). `applyRecipeSeed` v `domain.ts` je při prvním načtení dolije (gate `RECIPE_SEED_VERSION` + dedup dle názvu) a chybějící ingredience receptů zároveň vytvoří v seznamu (ingredient id se resolvuje dle normalizovaného názvu). Snapshot názvu ingredience v receptu používá hezký název s diakritikou ze seedu.
 - **Theming**: CSS custom properties v `:root` / `:root[data-theme="dark"]`. Theme bootstrap script v `layout.tsx` čte localStorage **před hydratací** aby zabránil FOUC.
 - **Žádný routing**: App Router se používá jen pro layout/page wrapper; navigace mezi "screeny" (recepty, ingredience, detail, formulář) je řešená přes React stav v mega-komponentě.
-- **Obrázky receptů**: ukládají se jako data URL přímo do localStorage (přes `FileReader.readAsDataURL`).
+- **Obrázky receptů**: uživatelské fotky se ukládají jako (komprimovaný) data URL do localStorage (`imagePath`). Defaultní seed recepty mají navíc `imageUrls[]` — vzdálené odkazy na `images.unsplash.com` (malá stopa v localStorage), povolené v `next.config.ts` přes `images.remotePatterns`. Karta zobrazuje `imageUrls[0] ?? imagePath`, detail má galerii zbylých fotek.
 
 ## Konvence projektu
 

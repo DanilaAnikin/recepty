@@ -1,0 +1,1558 @@
+[
+  {
+    "title": "Míchaná vajíčka se slaninou",
+    "description": "Klasická vydatná snídaně hotová za pár minut. Hřejivá kombinace nadýchaných vajec a křupavé slaniny zasytí na celé dopoledne a hodí se i jako rychlá večeře.",
+    "steps": [
+      "Slaninu nakrájejte na menší kostičky nebo proužky.",
+      "Na suché pánvi rozpalte slaninu na středním ohni a opékejte do křupava, pak ji odložte na talíř a přebytečný tuk částečně slijte.",
+      "Vejce rozklepněte do misky, přidejte mléko, špetku soli a pepře a krátce rozšlehejte vidličkou.",
+      "Na pánev s troškou výpeku přidejte kousek másla a nechte rozpustit na mírném ohni.",
+      "Vlijte rozšlehaná vejce a nechte chvíli zatáhnout, poté začněte stěrkou jemně shrnovat od kraje ke středu.",
+      "Míchejte pomalu na mírném ohni, dokud vejce nezhoustnou, ale stále zůstávají vláčná a lesklá.",
+      "Krátce před koncem vmíchejte zpět opečenou slaninu a ihned stáhněte z plotny, aby se vejce nepřesušila.",
+      "Podávejte hned, ideálně s čerstvým pečivem nebo opraženým toastem."
+    ],
+    "servings": 2,
+    "prepTimeMinutes": 5,
+    "cookTimeMinutes": 10,
+    "tags": [
+      "snídaně",
+      "rychlé",
+      "bezlepkové"
+    ],
+    "ingredients": [
+      {
+        "name": "Vejce",
+        "amount": "4",
+        "unit": "ks"
+      },
+      {
+        "name": "Anglická slanina",
+        "amount": "100",
+        "unit": "g"
+      },
+      {
+        "name": "Mléko",
+        "amount": "2",
+        "unit": "lzice"
+      },
+      {
+        "name": "Máslo",
+        "amount": "15",
+        "unit": "g"
+      },
+      {
+        "name": "Sůl",
+        "amount": "1",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Mletý pepř",
+        "amount": "",
+        "unit": "lzicka"
+      }
+    ],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1583552336796-531290f1fe2a?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1608475861994-cf7af0f0c1be?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1600028657385-f5f772e618b1?w=800&q=80&auto=format&fit=crop"
+    ]
+  },
+  {
+    "title": "Palačinky s marmeládou",
+    "description": "Tenké, sladké palačinky, které zvládne každý a děti je milují. Skvělé na víkendovou snídani i jako rychlý dezert, kdy stačí potřít marmeládou a srolovat.",
+    "steps": [
+      "Do mísy prosejte hladkou mouku, přidejte špetku soli a cukr.",
+      "Postupně vmíchejte mléko a vejce a vše rozšlehejte metličkou do hladkého, řidšího těsta bez hrudek.",
+      "Vmíchejte rozpuštěné máslo a nechte těsto 10 minut odpočinout.",
+      "Rozpalte pánev na středním ohni a lehce ji vytřete olejem nebo máslem.",
+      "Naběračkou vlijte trochu těsta a kroužením pánve ho rozprostřete do tenké placky.",
+      "Opékejte asi minutu, dokud okraje nezezlátnou, poté palačinku obraťte a dopečte z druhé strany.",
+      "Hotovou palačinku potřete marmeládou, srolujte nebo přeložte na čtvrtky.",
+      "Podávejte teplé, případně poprašte moučkovým cukrem."
+    ],
+    "servings": 4,
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 20,
+    "tags": [
+      "snídaně",
+      "dezert",
+      "sladké",
+      "vegetariánské"
+    ],
+    "ingredients": [
+      {
+        "name": "Hladká mouka",
+        "amount": "250",
+        "unit": "g"
+      },
+      {
+        "name": "Mléko",
+        "amount": "500",
+        "unit": "ml"
+      },
+      {
+        "name": "Vejce",
+        "amount": "2",
+        "unit": "ks"
+      },
+      {
+        "name": "Cukr krupice",
+        "amount": "1",
+        "unit": "lzice"
+      },
+      {
+        "name": "Sůl",
+        "amount": "1",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Máslo",
+        "amount": "30",
+        "unit": "g"
+      },
+      {
+        "name": "Olej na smažení",
+        "amount": "2",
+        "unit": "lzice"
+      },
+      {
+        "name": "Ovocná marmeláda",
+        "amount": "150",
+        "unit": "g"
+      },
+      {
+        "name": "Moučkový cukr",
+        "amount": "2",
+        "unit": "lzice"
+      }
+    ],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1656057205408-4a0a62cf2dfb?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1676287258876-388ff4f4b48b?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1593233124244-e06db310a292?w=800&q=80&auto=format&fit=crop"
+    ]
+  },
+  {
+    "title": "Ovesná kaše s ovocem",
+    "description": "Vláčná teplá ovesná kaše dozdobená čerstvým ovocem je výživná snídaně plná vlákniny. Zasytí na dlouho a snadno ji obměníte podle toho, co máte zrovna doma.",
+    "steps": [
+      "Do menšího hrnce nasypte ovesné vločky a zalijte mlékem (případně směsí mléka a vody).",
+      "Přiveďte k mírnému varu a za stálého míchání vařte na mírném ohni asi 5 minut, dokud kaše nezhoustne.",
+      "Přidejte špetku soli, med a podle chuti špetku skořice a krátce promíchejte.",
+      "Pokud je kaše příliš hustá, dolijte trochu mléka a prohřejte.",
+      "Mezitím omyjte ovoce, banán nakrájejte na kolečka a větší kusy ovoce na sousta.",
+      "Hotovou kaši přendejte do misky a uhlaďte.",
+      "Navrch poskládejte čerstvé ovoce a posypte hrstí ořechů.",
+      "Případně dozdobte lžičkou medu a podávejte teplé."
+    ],
+    "servings": 2,
+    "prepTimeMinutes": 5,
+    "cookTimeMinutes": 10,
+    "tags": [
+      "snídaně",
+      "vegetariánské",
+      "zdravé"
+    ],
+    "ingredients": [
+      {
+        "name": "Ovesné vločky",
+        "amount": "100",
+        "unit": "g"
+      },
+      {
+        "name": "Mléko",
+        "amount": "400",
+        "unit": "ml"
+      },
+      {
+        "name": "Med",
+        "amount": "2",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Skořice",
+        "amount": "",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Sůl",
+        "amount": "1",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Banán",
+        "amount": "1",
+        "unit": "ks"
+      },
+      {
+        "name": "Borůvky",
+        "amount": "100",
+        "unit": "g"
+      },
+      {
+        "name": "Jahody",
+        "amount": "100",
+        "unit": "g"
+      },
+      {
+        "name": "Vlašské ořechy",
+        "amount": "30",
+        "unit": "g"
+      }
+    ],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1702648982253-8b851013e81f?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1633327999180-f844ad9b1033?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1517673400267-0251440c45dc?w=800&q=80&auto=format&fit=crop"
+    ]
+  },
+  {
+    "title": "Avokádový toast s vejcem",
+    "description": "Moderní sytá snídaně, která spojuje krémové avokádo s proteinem z vejce. Rychlá, výživná a skvěle vypadá na talíři - ideální pro vyvážený start do dne.",
+    "steps": [
+      "Opečte plátky chleba v toustovači nebo na suché pánvi do křupava.",
+      "Avokádo rozkrojte, vyjměte pecku a dužinu vydlabejte do misky.",
+      "Avokádo vidličkou rozmačkejte, zakapejte citronovou šťávou, osolte a opepřete.",
+      "Do hrnce dejte vařit vodu a opatrně do mírně vroucí vody zatáhněte vejce na hnízdo, nebo vejce usmažte jako volské oko.",
+      "Vejce vařte asi 3-4 minuty, aby žloutek zůstal tekutý, poté ho vyjměte děrovanou lžící.",
+      "Opečený chléb potřete rozmačkaným avokádem do rovnoměrné vrstvy.",
+      "Navrch položte připravené vejce a lehce dosolte a opepřete.",
+      "Podle chuti posypte chilli vločkami a podávejte ihned."
+    ],
+    "servings": 2,
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 5,
+    "tags": [
+      "snídaně",
+      "rychlé",
+      "zdravé",
+      "vegetariánské"
+    ],
+    "ingredients": [
+      {
+        "name": "Toustový chléb",
+        "amount": "2",
+        "unit": "ks"
+      },
+      {
+        "name": "Avokádo",
+        "amount": "1",
+        "unit": "ks"
+      },
+      {
+        "name": "Vejce",
+        "amount": "2",
+        "unit": "ks"
+      },
+      {
+        "name": "Citronová šťáva",
+        "amount": "1",
+        "unit": "lzice"
+      },
+      {
+        "name": "Sůl",
+        "amount": "1",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Mletý pepř",
+        "amount": "",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Chilli vločky",
+        "amount": "",
+        "unit": "lzicka"
+      }
+    ],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1687276287139-88f7333c8ca4?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1541519227354-08fa5d50c44d?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1504382262782-5b4ece78642b?w=800&q=80&auto=format&fit=crop"
+    ]
+  },
+  {
+    "title": "Caesar salát s kuřecím masem",
+    "description": "Svěží a sytý salát s grilovaným kuřecím masem, křupavými krutony a smetanovým parmazánovým dresinkem. Skvělý jako lehký oběd nebo večeře, který zasytí a přitom nezatíží.",
+    "steps": [
+      "Kuřecí prsa osušte, osolte, opepřete a potřete trochou olivového oleje. Na rozpálené pánvi je opečte z obou stran dozlatova (asi 5-6 minut z každé strany), dokud nejsou propečená.",
+      "Opečené maso nechte chvíli odpočinout, poté ho nakrájejte na plátky nebo kostky.",
+      "Starší pečivo nakrájejte na kostky, promíchejte s lžící olivového oleje a prolisovaným stroužkem česneku a opečte na suché pánvi nebo v troubě do křupava na krutony.",
+      "Připravte dresink: smíchejte majonézu, najemno nastrouhaný parmazán, citronovou šťávu, prolisovaný česnek, worcesterskou omáčku, špetku soli a pepře. Zřeďte trochou vody na lijatelnou konzistenci.",
+      "Římský salát omyjte, osušte a natrhejte na menší kousky do velké mísy.",
+      "K salátu přidejte polovinu dresinku a jemně promíchejte, aby se listy obalily.",
+      "Salát rozdělte na talíře, navrch poskládejte plátky kuřecího masa a krutony.",
+      "Pokapejte zbylým dresinkem, posypte zbytkem nastrouhaného parmazánu a čerstvě mletým pepřem. Ihned podávejte."
+    ],
+    "servings": 2,
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 15,
+    "tags": [
+      "salát",
+      "oběd",
+      "kuřecí"
+    ],
+    "ingredients": [
+      {
+        "name": "Kuřecí prsa",
+        "amount": "300",
+        "unit": "g"
+      },
+      {
+        "name": "Římský salát",
+        "amount": "1",
+        "unit": "ks"
+      },
+      {
+        "name": "Parmazán",
+        "amount": "50",
+        "unit": "g"
+      },
+      {
+        "name": "Toustový chléb",
+        "amount": "3",
+        "unit": "ks"
+      },
+      {
+        "name": "Majonéza",
+        "amount": "3",
+        "unit": "lzice"
+      },
+      {
+        "name": "Citronová šťáva",
+        "amount": "1",
+        "unit": "lzice"
+      },
+      {
+        "name": "Česnek",
+        "amount": "2",
+        "unit": "ks"
+      },
+      {
+        "name": "Worcesterská omáčka",
+        "amount": "1",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Olivový olej",
+        "amount": "2",
+        "unit": "lzice"
+      },
+      {
+        "name": "Sůl",
+        "amount": "",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Mletý pepř",
+        "amount": "",
+        "unit": "lzicka"
+      }
+    ],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1605291535065-e1d52d2b264a?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1580013759032-c96505e24c1f?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1512852939750-1305098529bf?w=800&q=80&auto=format&fit=crop"
+    ]
+  },
+  {
+    "title": "Řecký salát",
+    "description": "Tradiční řecký salát plný zralé zeleniny, oliv a sýru feta zalitý olivovým olejem. Osvěžující a zdravý, ideální na horké letní dny nebo jako lehká příloha ke grilování.",
+    "steps": [
+      "Rajčata omyjte a nakrájejte na větší kousky nebo měsíčky a dejte do velké mísy.",
+      "Okurku oloupejte podle chuti, rozkrojte podélně a nakrájejte na silnější plátky. Přidejte k rajčatům.",
+      "Červenou cibuli oloupejte a nakrájejte na tenká kolečka nebo půlměsíčky.",
+      "Papriku zbavte jadřince a nakrájejte na proužky. Přidejte cibuli i papriku do mísy.",
+      "Do salátu přidejte celé olivy.",
+      "Připravte zálivku: smíchejte olivový olej, červený vinný ocet, sušené oregano, sůl a pepř.",
+      "Zálivku přelijte přes zeleninu a jemně promíchejte.",
+      "Navrch položte sýr feta nakrájený na kostky nebo celý plátek, posypte dalším oreganem a pokapejte trochou olivového oleje. Podávejte ideálně s čerstvým pečivem."
+    ],
+    "servings": 4,
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 0,
+    "tags": [
+      "salát",
+      "vegetariánské",
+      "bezmasé"
+    ],
+    "ingredients": [
+      {
+        "name": "Rajčata",
+        "amount": "4",
+        "unit": "ks"
+      },
+      {
+        "name": "Salátová okurka",
+        "amount": "1",
+        "unit": "ks"
+      },
+      {
+        "name": "Červená cibule",
+        "amount": "1",
+        "unit": "ks"
+      },
+      {
+        "name": "Paprika",
+        "amount": "1",
+        "unit": "ks"
+      },
+      {
+        "name": "Sýr feta",
+        "amount": "200",
+        "unit": "g"
+      },
+      {
+        "name": "Černé olivy",
+        "amount": "100",
+        "unit": "g"
+      },
+      {
+        "name": "Olivový olej",
+        "amount": "4",
+        "unit": "lzice"
+      },
+      {
+        "name": "Červený vinný ocet",
+        "amount": "1",
+        "unit": "lzice"
+      },
+      {
+        "name": "Sušené oregano",
+        "amount": "1",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Sůl",
+        "amount": "",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Mletý pepř",
+        "amount": "",
+        "unit": "lzicka"
+      }
+    ],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1607532941433-304659e8198a?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1606735584785-1848fdcaea57?w=800&q=80&auto=format&fit=crop"
+    ]
+  },
+  {
+    "title": "Bramboračka",
+    "description": "Hustá a vydatná česká bramboračka s kořenovou zeleninou, houbami a majoránkou. Klasická domácí polévka, která zahřeje a zasytí celou rodinu, ideální na chladné dny.",
+    "steps": [
+      "Sušené houby namočte do trošky teplé vody, aby změkly. Pokud používáte čerstvé, jen je nakrájejte.",
+      "Brambory, mrkev, petržel a celer oloupejte a nakrájejte na malé kostičky. Cibuli a česnek nakrájejte najemno.",
+      "Na hrnci rozehřejte máslo, osmahněte na něm cibuli dozlatova, přidejte hladkou mouku a za stálého míchání připravte světlou jíšku.",
+      "Jíšku zalijte vodou nebo vývarem, dobře rozmíchejte, aby nevznikly hrudky, a přiveďte k varu.",
+      "Přidejte nakrájenou zeleninu, brambory, houby i s vodou z namáčení a vařte přibližně 20 minut, dokud zelenina nezměkne.",
+      "Polévku ochuťte solí, pepřem, drceným kmínem, majoránkou a prolisovaným česnekem.",
+      "Pro hustší konzistenci můžete část brambor rozmačkat přímo v hrnci.",
+      "Před podáváním nechte ještě chvíli probublat, dochuťte podle chuti a podávejte s čerstvým chlebem."
+    ],
+    "servings": 4,
+    "prepTimeMinutes": 20,
+    "cookTimeMinutes": 30,
+    "tags": [
+      "polévka",
+      "oběd",
+      "vegetariánské"
+    ],
+    "ingredients": [
+      {
+        "name": "Brambory",
+        "amount": "500",
+        "unit": "g"
+      },
+      {
+        "name": "Mrkev",
+        "amount": "1",
+        "unit": "ks"
+      },
+      {
+        "name": "Petržel",
+        "amount": "1",
+        "unit": "ks"
+      },
+      {
+        "name": "Celer",
+        "amount": "100",
+        "unit": "g"
+      },
+      {
+        "name": "Cibule",
+        "amount": "1",
+        "unit": "ks"
+      },
+      {
+        "name": "Sušené houby",
+        "amount": "20",
+        "unit": "g"
+      },
+      {
+        "name": "Česnek",
+        "amount": "3",
+        "unit": "ks"
+      },
+      {
+        "name": "Máslo",
+        "amount": "30",
+        "unit": "g"
+      },
+      {
+        "name": "Hladká mouka",
+        "amount": "2",
+        "unit": "lzice"
+      },
+      {
+        "name": "Voda",
+        "amount": "1.5",
+        "unit": "l"
+      },
+      {
+        "name": "Majoránka",
+        "amount": "1",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Kmín",
+        "amount": "1",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Sůl",
+        "amount": "",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Mletý pepř",
+        "amount": "",
+        "unit": "lzicka"
+      }
+    ],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1616501268826-ee9731c915d4?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1642463002619-f6e168821c56?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1610725663727-08695a1ac3ff?w=800&q=80&auto=format&fit=crop"
+    ]
+  },
+  {
+    "title": "Česnečka",
+    "description": "Vydatná a aromatická česká česnečka, která prohřeje a postaví na nohy. Tradiční lék na kocovinu i nachlazení, podávaná s opečeným chlebem, sýrem a vajíčkem.",
+    "steps": [
+      "Česnek oloupejte a prolisujte nebo nasekejte najemno.",
+      "Brambory oloupejte a nakrájejte na malé kostičky.",
+      "Do hrnce dejte vývar nebo vodu, přidejte brambory, kmín, sůl a přiveďte k varu. Vařte asi 10 minut, dokud brambory nezměknou.",
+      "Přidejte prolisovaný česnek a vařte ještě 3-4 minuty, aby se rozvinula chuť (česnek nevařte příliš dlouho, ať nezhořkne).",
+      "Polévku ochuťte mletým pepřem, majoránkou a podle potřeby dosolte. Přilijte trochu rozpuštěného másla pro lepší chuť.",
+      "Chléb nakrájejte na kostky a opečte na pánvi s trochou tuku nebo v troubě do křupava na krutony.",
+      "Pokud chcete, můžete do vroucí polévky za stálého míchání zatáhnout rozšlehané vejce nebo do každé porce přidat celé vejce vařené natvrdo.",
+      "Polévku nalijte do misek, posypte nastrouhaným sýrem a krutony a ihned podávejte horkou."
+    ],
+    "servings": 4,
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 20,
+    "tags": [
+      "polévka",
+      "rychlé",
+      "oběd"
+    ],
+    "ingredients": [
+      {
+        "name": "Česnek",
+        "amount": "1",
+        "unit": "ks"
+      },
+      {
+        "name": "Brambory",
+        "amount": "3",
+        "unit": "ks"
+      },
+      {
+        "name": "Zeleninový vývar",
+        "amount": "1.5",
+        "unit": "l"
+      },
+      {
+        "name": "Vejce",
+        "amount": "2",
+        "unit": "ks"
+      },
+      {
+        "name": "Tvrdý sýr",
+        "amount": "80",
+        "unit": "g"
+      },
+      {
+        "name": "Chléb",
+        "amount": "2",
+        "unit": "ks"
+      },
+      {
+        "name": "Máslo",
+        "amount": "20",
+        "unit": "g"
+      },
+      {
+        "name": "Kmín",
+        "amount": "1",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Majoránka",
+        "amount": "1",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Sůl",
+        "amount": "",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Mletý pepř",
+        "amount": "",
+        "unit": "lzicka"
+      }
+    ],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1611745451987-bd5df5565d9e?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1718471342800-a4dbed1b6a57?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1600790142055-619df03207e6?w=800&q=80&auto=format&fit=crop"
+    ]
+  },
+  {
+    "title": "Rajská polévka",
+    "description": "Klasická sametová rajská polévka z dětství, sytě červená a jemně nakyslá. Skvělá jako lehký oběd nebo předkrm, výborně chutná s rýží nebo malými těstovinami.",
+    "steps": [
+      "Na hrnci rozehřejte máslo a olej, přidejte nadrobno nakrájenou cibuli a osmahněte do sklovita.",
+      "Přisypte cukr a nechte lehce zkaramelizovat, pak zaprašte hladkou moukou a krátce orestujte.",
+      "Vmíchejte protlak a chvíli ho na tuku opražte, aby ztratil syrovou chuť.",
+      "Zalijte vývarem za stálého míchání, aby se netvořily hrudky, a přidejte loupaná rajčata.",
+      "Přidejte bobkový list, nové koření, sůl a pepř a vařte na mírném ohni asi 20 minut.",
+      "Vyjměte bobkový list a nové koření a polévku rozmixujte tyčovým mixérem do hladka.",
+      "Dochuťte solí, cukrem a špetkou octa nebo citronové šťávy podle chuti.",
+      "Podávejte horké, ozdobené lžící zakysané smetany a podle chuti se lžící uvařené rýže."
+    ],
+    "servings": 4,
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 30,
+    "tags": [
+      "polévka",
+      "oběd",
+      "bezmasé"
+    ],
+    "ingredients": [
+      {
+        "name": "Loupaná rajčata",
+        "amount": "400",
+        "unit": "g"
+      },
+      {
+        "name": "Rajčatový protlak",
+        "amount": "2",
+        "unit": "lzice"
+      },
+      {
+        "name": "Cibule",
+        "amount": "1",
+        "unit": "ks"
+      },
+      {
+        "name": "Máslo",
+        "amount": "30",
+        "unit": "g"
+      },
+      {
+        "name": "Olivový olej",
+        "amount": "1",
+        "unit": "lzice"
+      },
+      {
+        "name": "Hladká mouka",
+        "amount": "1",
+        "unit": "lzice"
+      },
+      {
+        "name": "Zeleninový vývar",
+        "amount": "800",
+        "unit": "ml"
+      },
+      {
+        "name": "Cukr krystal",
+        "amount": "1",
+        "unit": "lzice"
+      },
+      {
+        "name": "Bobkový list",
+        "amount": "2",
+        "unit": "ks"
+      },
+      {
+        "name": "Nové koření",
+        "amount": "3",
+        "unit": "ks"
+      },
+      {
+        "name": "Sůl",
+        "amount": "1",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Mletý pepř",
+        "amount": "0.5",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Zakysaná smetana",
+        "amount": "100",
+        "unit": "g"
+      }
+    ],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1620791144170-8a443bf37a33?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1578020190125-f4f7c18bc9cb?w=800&q=80&auto=format&fit=crop"
+    ]
+  },
+  {
+    "title": "Špagety aglio e olio",
+    "description": "Nejjednodušší italská klasika z pár surovin, kterou připravíte za chvíli i pozdě večer. Voňavý česnek, olivový olej a chilli, ideální pro rychlou bezmasou večeři.",
+    "steps": [
+      "Dejte vařit velký hrnec osolené vody a uvařte špagety podle návodu na obalu al dente.",
+      "Mezitím na pánvi rozehřejte olivový olej na mírném ohni.",
+      "Přidejte na tenké plátky nakrájený česnek a chilli vločky a opékejte do zlatova, ať se česnek nespálí.",
+      "Před scezením odeberte naběračku škrobové vody z vaření těstovin.",
+      "Scezené špagety přendejte na pánev k česnekovému oleji a promíchejte.",
+      "Přilijte trochu odložené vody a za stálého míchání nechte vsáknout, aby vznikla lesklá omáčka.",
+      "Vmíchejte nasekanou petrželku, osolte a opepřete podle chuti.",
+      "Ihned podávejte, podle chuti posypané strouhaným parmazánem."
+    ],
+    "servings": 2,
+    "prepTimeMinutes": 5,
+    "cookTimeMinutes": 15,
+    "tags": [
+      "oběd",
+      "rychlé",
+      "bezmasé",
+      "vegetariánské"
+    ],
+    "ingredients": [
+      {
+        "name": "Špagety",
+        "amount": "200",
+        "unit": "g"
+      },
+      {
+        "name": "Česnek",
+        "amount": "4",
+        "unit": "ks"
+      },
+      {
+        "name": "Olivový olej",
+        "amount": "5",
+        "unit": "lzice"
+      },
+      {
+        "name": "Chilli vločky",
+        "amount": "0.5",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Petrželka",
+        "amount": "2",
+        "unit": "lzice"
+      },
+      {
+        "name": "Sůl",
+        "amount": "1",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Mletý pepř",
+        "amount": "0.5",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Parmazán",
+        "amount": "30",
+        "unit": "g"
+      }
+    ],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1622973536968-3ead9e780960?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1598866594230-a7c12756260f?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1516100882582-96c3a05fe590?w=800&q=80&auto=format&fit=crop"
+    ]
+  },
+  {
+    "title": "Penne s bazalkovým pestem",
+    "description": "Rychlé a voňavé těstoviny s čerstvým bazalkovým pestem a parmazánem. Hotové za pár minut, ideální vegetariánská večeře nebo oběd do krabičky.",
+    "steps": [
+      "Uvařte penne v osolené vodě podle návodu na obalu do stavu al dente.",
+      "Pokud děláte pesto doma, rozmixujte bazalku, piniové oříšky, česnek, parmazán a olivový olej do hladké pasty.",
+      "Před scezením odeberte malou naběračku vody z vaření těstovin.",
+      "Scezené penne vraťte do hrnce a odstavte z ohně, aby se pesto netepelně neztratilo na barvě.",
+      "Vmíchejte pesto a podle potřeby přilijte trochu odložené vody, aby omáčka pěkně obalila těstoviny.",
+      "Dochuťte solí a čerstvě mletým pepřem.",
+      "Rozdělte na talíře a posypte strouhaným parmazánem a lístky čerstvé bazalky."
+    ],
+    "servings": 2,
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 12,
+    "tags": [
+      "oběd",
+      "rychlé",
+      "vegetariánské",
+      "bezmasé"
+    ],
+    "ingredients": [
+      {
+        "name": "Penne",
+        "amount": "250",
+        "unit": "g"
+      },
+      {
+        "name": "Čerstvá bazalka",
+        "amount": "50",
+        "unit": "g"
+      },
+      {
+        "name": "Piniové oříšky",
+        "amount": "30",
+        "unit": "g"
+      },
+      {
+        "name": "Parmazán",
+        "amount": "50",
+        "unit": "g"
+      },
+      {
+        "name": "Česnek",
+        "amount": "1",
+        "unit": "ks"
+      },
+      {
+        "name": "Olivový olej",
+        "amount": "60",
+        "unit": "ml"
+      },
+      {
+        "name": "Sůl",
+        "amount": "1",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Mletý pepř",
+        "amount": "0.5",
+        "unit": "lzicka"
+      }
+    ],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1616299908398-9af1134ad522?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1664966706747-6e76785214cc?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1612548041594-fbd83fbce609?w=800&q=80&auto=format&fit=crop"
+    ]
+  },
+  {
+    "title": "Kuřecí kari s rýží",
+    "description": "Voňavé krémové kuřecí kari s kokosovým mlékem podávané s rýží. Středně pikantní a syté jídlo, které zvládnete během půl hodiny na jednu pánev.",
+    "steps": [
+      "Uvařte rýži podle návodu na obalu a nechte ji pod pokličkou dojít.",
+      "Kuřecí prsa nakrájejte na kostky, osolte a opepřete.",
+      "Na pánvi rozehřejte olej a kuřecí maso zprudka opečte ze všech stran, pak ho vyjměte stranou.",
+      "Na stejné pánvi osmahněte nadrobno nakrájenou cibuli, česnek a nastrouhaný zázvor.",
+      "Přidejte kari koření a krátce ho orestujte, aby uvolnilo vůni.",
+      "Vraťte maso na pánev, zalijte kokosovým mlékem a přiveďte k mírnému varu.",
+      "Duste asi 12 minut, dokud omáčka nezhoustne a maso není měkké, podle chuti přidejte protlak.",
+      "Dochuťte solí a šťávou z limetky a podávejte s rýží, posypané nasekaným koriandrem."
+    ],
+    "servings": 4,
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 25,
+    "tags": [
+      "oběd",
+      "večeře",
+      "maso"
+    ],
+    "ingredients": [
+      {
+        "name": "Kuřecí prsa",
+        "amount": "500",
+        "unit": "g"
+      },
+      {
+        "name": "Rýže basmati",
+        "amount": "300",
+        "unit": "g"
+      },
+      {
+        "name": "Kokosové mléko",
+        "amount": "400",
+        "unit": "ml"
+      },
+      {
+        "name": "Cibule",
+        "amount": "1",
+        "unit": "ks"
+      },
+      {
+        "name": "Česnek",
+        "amount": "2",
+        "unit": "ks"
+      },
+      {
+        "name": "Čerstvý zázvor",
+        "amount": "1",
+        "unit": "lzice"
+      },
+      {
+        "name": "Kari koření",
+        "amount": "2",
+        "unit": "lzice"
+      },
+      {
+        "name": "Rajčatový protlak",
+        "amount": "1",
+        "unit": "lzice"
+      },
+      {
+        "name": "Olej",
+        "amount": "2",
+        "unit": "lzice"
+      },
+      {
+        "name": "Limetka",
+        "amount": "1",
+        "unit": "ks"
+      },
+      {
+        "name": "Čerstvý koriandr",
+        "amount": "2",
+        "unit": "lzice"
+      },
+      {
+        "name": "Sůl",
+        "amount": "1",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Mletý pepř",
+        "amount": "0.5",
+        "unit": "lzicka"
+      }
+    ],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1708782344490-9026aaa5eec7?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1723208841184-3d91ba244c60?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1633457027853-106d9bed16ce?w=800&q=80&auto=format&fit=crop"
+    ]
+  },
+  {
+    "title": "Smažený sýr s hranolkami",
+    "description": "Klasika české hospodské kuchyně, kterou zvládne každý doma. Křupavý obalený sýr s horkými hranolkami a tatarkou potěší celou rodinu a je hotový raz dva.",
+    "steps": [
+      "Sýr nakrájejte na plátky silné asi 1,5 cm. Pokud používáte eidam v kuse, nechte ho chvíli v lednici, lépe se obaluje.",
+      "Připravte si tři talíře: jeden s hladkou moukou, druhý s rozšlehanými vejci a třetí se strouhankou.",
+      "Každý plátek sýra obalte nejprve v mouce, pak ve vejci a nakonec ve strouhance. Pro pevnější obal celý postup zopakujte ještě jednou.",
+      "Rozehřejte olej v hlubší pánvi na 170 °C. Hranolky usmažte dozlatova podle návodu na obalu, vyndejte na papírový ubrousek a osolte.",
+      "Do rozpáleného oleje vložte obalený sýr a smažte z každé strany asi 2-3 minuty, dokud není zlatavý a křupavý.",
+      "Smažený sýr vyndejte na papírový ubrousek, aby okapal přebytečný tuk.",
+      "Servírujte horký sýr s hranolkami, tatarskou omáčkou a plátkem citronu. Podávejte ihned, dokud je sýr roztékavý."
+    ],
+    "servings": 2,
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 15,
+    "tags": [
+      "oběd",
+      "vegetariánské",
+      "rychlé",
+      "smažené"
+    ],
+    "ingredients": [
+      {
+        "name": "Eidam v kuse",
+        "amount": "300",
+        "unit": "g"
+      },
+      {
+        "name": "Hladká mouka",
+        "amount": "100",
+        "unit": "g"
+      },
+      {
+        "name": "Vejce",
+        "amount": "2",
+        "unit": "ks"
+      },
+      {
+        "name": "Strouhanka",
+        "amount": "150",
+        "unit": "g"
+      },
+      {
+        "name": "Mražené hranolky",
+        "amount": "400",
+        "unit": "g"
+      },
+      {
+        "name": "Olej na smažení",
+        "amount": "500",
+        "unit": "ml"
+      },
+      {
+        "name": "Sůl",
+        "amount": "1",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Tatarská omáčka",
+        "amount": "100",
+        "unit": "g"
+      },
+      {
+        "name": "Citron",
+        "amount": "0.5",
+        "unit": "ks"
+      }
+    ],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1548340748-6d2b7d7da280?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1728468314335-3f973a10e53d?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1632811126382-228432b43576?w=800&q=80&auto=format&fit=crop"
+    ]
+  },
+  {
+    "title": "Kuřecí řízek s bramborovou kaší",
+    "description": "Oblíbený nedělní oběd v lehčí kuřecí variantě. Šťavnatý řízek v křupavém obalu s nadýchanou máslovou kaší zasytí a chutná dětem i dospělým.",
+    "steps": [
+      "Kuřecí prsa rozkrojte na tenké plátky a lehce naklepejte paličkou. Osolte je a opepřete z obou stran.",
+      "Brambory oloupejte, nakrájejte na menší kostky a dejte vařit do osolené vody na 20 minut, dokud nezměknou.",
+      "Mezitím si připravte obalovou linku: mouku, rozšlehaná vejce se špetkou soli a strouhanku ve třech miskách.",
+      "Plátky kuřete obalte postupně v mouce, vejci a strouhance a důkladně přitlačte, aby obal dobře držel.",
+      "Na pánvi rozehřejte olej a řízky smažte po každé straně asi 4 minuty dozlatova. Hotové odložte na papírový ubrousek.",
+      "Uvařené brambory sceďte, přidejte máslo a horké mléko a rozšlehejte na hladkou kaši. Dochuťte solí a špetkou muškátového oříšku.",
+      "Na talíř navršte bramborovou kaši, přidejte řízek a ozdobte plátkem citronu. Podávejte ihned, dokud je vše teplé."
+    ],
+    "servings": 4,
+    "prepTimeMinutes": 20,
+    "cookTimeMinutes": 25,
+    "tags": [
+      "oběd",
+      "klasika",
+      "kuřecí"
+    ],
+    "ingredients": [
+      {
+        "name": "Kuřecí prsa",
+        "amount": "600",
+        "unit": "g"
+      },
+      {
+        "name": "Brambory",
+        "amount": "800",
+        "unit": "g"
+      },
+      {
+        "name": "Máslo",
+        "amount": "60",
+        "unit": "g"
+      },
+      {
+        "name": "Mléko",
+        "amount": "150",
+        "unit": "ml"
+      },
+      {
+        "name": "Hladká mouka",
+        "amount": "100",
+        "unit": "g"
+      },
+      {
+        "name": "Vejce",
+        "amount": "2",
+        "unit": "ks"
+      },
+      {
+        "name": "Strouhanka",
+        "amount": "150",
+        "unit": "g"
+      },
+      {
+        "name": "Olej na smažení",
+        "amount": "200",
+        "unit": "ml"
+      },
+      {
+        "name": "Sůl",
+        "amount": "2",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Mletý pepř",
+        "amount": "0.5",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Muškátový oříšek",
+        "amount": "1",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Citron",
+        "amount": "0.5",
+        "unit": "ks"
+      }
+    ],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1633436375153-d7045cb93e38?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1580961106145-fbd0663a4807?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1599921841143-819065a55cc6?w=800&q=80&auto=format&fit=crop"
+    ]
+  },
+  {
+    "title": "Bramboráky",
+    "description": "Voňavé česnekové bramboráky z nastrouhaných syrových brambor. Levné, sytě a rychlé jídlo na večeři nebo jako příloha, které se nikdy neomrzí.",
+    "steps": [
+      "Brambory oloupejte a nastrouhejte najemno do velké mísy. Část vody, která se uvolní, slijte.",
+      "Přidejte vejce, prolisovaný česnek, hladkou mouku, sůl, pepř a majoránku. Vše dobře promíchejte na hustší těsto.",
+      "Pokud je těsto příliš řídké, přidejte trochu mouky, aby drželo tvar.",
+      "Na pánvi rozehřejte olej. Lžící nabírejte těsto a na pánvi ho rozprostřete do tenkých placek.",
+      "Smažte bramboráky na středním plameni asi 3 minuty z každé strany, dokud nejsou zlatavé a křupavé.",
+      "Hotové placky odkládejte na papírový ubrousek, aby z nich okapal přebytečný tuk.",
+      "Podávejte horké, samotné nebo jako přílohu. Skvěle chutnají i s kysaným zelím."
+    ],
+    "servings": 4,
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 20,
+    "tags": [
+      "večeře",
+      "vegetariánské",
+      "bezmasé",
+      "levné"
+    ],
+    "ingredients": [
+      {
+        "name": "Brambory",
+        "amount": "1",
+        "unit": "kg"
+      },
+      {
+        "name": "Vejce",
+        "amount": "2",
+        "unit": "ks"
+      },
+      {
+        "name": "Česnek",
+        "amount": "4",
+        "unit": "ks"
+      },
+      {
+        "name": "Hladká mouka",
+        "amount": "100",
+        "unit": "g"
+      },
+      {
+        "name": "Majoránka",
+        "amount": "1",
+        "unit": "lzice"
+      },
+      {
+        "name": "Sůl",
+        "amount": "1.5",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Mletý pepř",
+        "amount": "0.5",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Olej na smažení",
+        "amount": "150",
+        "unit": "ml"
+      }
+    ],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1607095597425-6f61dee8ab7e?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1595249809609-f86d579eaeac?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1601768472535-bb98048932c7?w=800&q=80&auto=format&fit=crop"
+    ]
+  },
+  {
+    "title": "Zapékané těstoviny se šunkou a sýrem",
+    "description": "Jednoduché zapékané těstoviny, které zvládneš i ve všední večer. Krémová směs se šunkou a sýrem se zapeče do zlatova a zasytí celou rodinu na jeden pekáč.",
+    "steps": [
+      "Troubu předehřejte na 200 °C. Těstoviny uvařte v osolené vodě o minutu kratší dobu, než uvádí návod, a sceďte.",
+      "Šunku nakrájejte na kostičky a polovinu sýra nastrouhejte.",
+      "V míse rozšlehejte vejce se smetanou, mlékem, solí a pepřem.",
+      "Uvařené těstoviny smíchejte se šunkou a nastrouhaným sýrem a přesypte do vymazaného zapékacího pekáče.",
+      "Zalijte vše smetanovou směsí tak, aby se rovnoměrně rozprostřela mezi těstoviny.",
+      "Navrch nastrouhejte zbytek sýra a poklaďte několika vločkami másla.",
+      "Pečte v troubě asi 25 minut, dokud není povrch zlatavý a křupavý.",
+      "Hotové těstoviny nechte 5 minut odpočinout, posypte pažitkou a podávejte."
+    ],
+    "servings": 4,
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 35,
+    "tags": [
+      "oběd",
+      "večeře",
+      "zapékané"
+    ],
+    "ingredients": [
+      {
+        "name": "Těstoviny (penne)",
+        "amount": "400",
+        "unit": "g"
+      },
+      {
+        "name": "Šunka",
+        "amount": "200",
+        "unit": "g"
+      },
+      {
+        "name": "Eidam",
+        "amount": "200",
+        "unit": "g"
+      },
+      {
+        "name": "Smetana ke šlehání",
+        "amount": "200",
+        "unit": "ml"
+      },
+      {
+        "name": "Mléko",
+        "amount": "100",
+        "unit": "ml"
+      },
+      {
+        "name": "Vejce",
+        "amount": "2",
+        "unit": "ks"
+      },
+      {
+        "name": "Máslo",
+        "amount": "20",
+        "unit": "g"
+      },
+      {
+        "name": "Sůl",
+        "amount": "1",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Mletý pepř",
+        "amount": "0.5",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Pažitka",
+        "amount": "1",
+        "unit": "lzice"
+      }
+    ],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1654780105295-9227206f11ec?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1603662953679-1a32f2155b34?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1620041631703-45ddcef3dae0?w=800&q=80&auto=format&fit=crop"
+    ]
+  },
+  {
+    "title": "Tortilla wrap s kuřecím masem",
+    "description": "Rychlý a sytý wrap s opečeným kuřecím masem, čerstvou zeleninou a krémovým dresinkem. Ideální na lehký oběd, svačinu do práce nebo večeři, když nechcete dlouho stát u sporáku.",
+    "steps": [
+      "Kuřecí prsa nakrájejte na tenké proužky a osolte, opepřete a posypte mletou paprikou.",
+      "Na rozpálené pánvi s olivovým olejem maso orestujte dozlatova ze všech stran, asi 6 až 8 minut, dokud není uvnitř propečené.",
+      "Rajče a okurku nakrájejte na proužky a salát natrhejte na menší kousky.",
+      "V misce smíchejte zakysanou smetanu s prolisovaným česnekem, špetkou soli a trochou citronové šťávy na rychlý dresink.",
+      "Tortilly krátce nahřejte na suché pánvi nebo v mikrovlnce, aby byly vláčné a daly se snadno srolovat.",
+      "Na každou tortillu rozetřete dresink, doprostřed naskládejte salát, kuřecí maso, rajče, okurku a posypte nastrouhaným sýrem.",
+      "Tortillu pevně zarolujte, okraje zespodu přehněte dovnitř, aby náplň nevypadávala.",
+      "Wrap přepulte našikmo a ihned podávejte, případně krátce opečte v grilovací pánvi pro křupavý povrch."
+    ],
+    "servings": 2,
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 10,
+    "tags": [
+      "oběd",
+      "rychlé",
+      "svačina"
+    ],
+    "ingredients": [
+      {
+        "name": "Pšeničné tortilly",
+        "amount": "2",
+        "unit": "ks"
+      },
+      {
+        "name": "Kuřecí prsa",
+        "amount": "250",
+        "unit": "g"
+      },
+      {
+        "name": "Olivový olej",
+        "amount": "1",
+        "unit": "lzice"
+      },
+      {
+        "name": "Mletá sladká paprika",
+        "amount": "1",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Salát ledový",
+        "amount": "4",
+        "unit": "ks"
+      },
+      {
+        "name": "Rajče",
+        "amount": "1",
+        "unit": "ks"
+      },
+      {
+        "name": "Okurka",
+        "amount": "0.5",
+        "unit": "ks"
+      },
+      {
+        "name": "Zakysaná smetana",
+        "amount": "100",
+        "unit": "g"
+      },
+      {
+        "name": "Česnek",
+        "amount": "1",
+        "unit": "ks"
+      },
+      {
+        "name": "Citronová šťáva",
+        "amount": "1",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Strouhaný sýr",
+        "amount": "60",
+        "unit": "g"
+      },
+      {
+        "name": "Sůl",
+        "amount": "",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Mletý pepř",
+        "amount": "",
+        "unit": "lzicka"
+      }
+    ],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1584947897804-408958123f1d?w=800&q=80&auto=format&fit=crop"
+    ]
+  },
+  {
+    "title": "Omeleta se sýrem a šunkou",
+    "description": "Klasická nadýchaná omeleta s rozteklým sýrem a šunkou, hotová za pár minut. Skvělá vydatná snídaně nebo rychlá večeře, ke které stačí jen pečivo a kousek zeleniny.",
+    "steps": [
+      "Vejce rozklepněte do misky, přidejte mléko, špetku soli a pepře a vidličkou je důkladně rozšlehejte.",
+      "Šunku nakrájejte na malé kostičky a sýr nastrouhejte nahrubo.",
+      "Na pánvi rozehřejte máslo na středním plameni, dokud nezačne pěnit.",
+      "Vlijte rozšlehaná vejce a nechte je chvíli stáhnout, špachtlí přitahujte okraje ke středu, aby se tekutá část dostala ke dnu.",
+      "Když je omeleta zespodu zlatavá a navrchu ještě lehce vláčná, posypte jednu polovinu šunkou a sýrem.",
+      "Druhou polovinu omelety překlopte přes náplň a nechte ji asi minutu prohřát, aby se sýr rozpustil.",
+      "Omeletu opatrně sesuňte na talíř, posypte nasekanou pažitkou a ihned podávejte."
+    ],
+    "servings": 2,
+    "prepTimeMinutes": 5,
+    "cookTimeMinutes": 8,
+    "tags": [
+      "snídaně",
+      "rychlé",
+      "vydatné"
+    ],
+    "ingredients": [
+      {
+        "name": "Vejce",
+        "amount": "4",
+        "unit": "ks"
+      },
+      {
+        "name": "Mléko",
+        "amount": "3",
+        "unit": "lzice"
+      },
+      {
+        "name": "Šunka",
+        "amount": "80",
+        "unit": "g"
+      },
+      {
+        "name": "Sýr eidam",
+        "amount": "80",
+        "unit": "g"
+      },
+      {
+        "name": "Máslo",
+        "amount": "20",
+        "unit": "g"
+      },
+      {
+        "name": "Pažitka",
+        "amount": "1",
+        "unit": "lzice"
+      },
+      {
+        "name": "Sůl",
+        "amount": "",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Mletý pepř",
+        "amount": "",
+        "unit": "lzicka"
+      }
+    ],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1668283653825-37b80f055b05?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1709754521379-00166805eea4?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1583831363686-7fc6c043a1d4?w=800&q=80&auto=format&fit=crop"
+    ]
+  },
+  {
+    "title": "Banánový chlebíček",
+    "description": "Vláčný a voňavý banánový chlebíček, který skvěle využije přezrálé banány. Ideální k snídani, ke kávě nebo jako sladká svačina pro celou rodinu.",
+    "steps": [
+      "Troubu předehřejte na 175 °C a chlebíčkovou formu vymažte máslem a vysypte moukou.",
+      "Oloupané banány vidličkou rozmačkejte na hladkou kaši.",
+      "V míse ušlehejte změklé máslo s cukrem do pěny, poté zašlehejte vejce a vanilkový cukr.",
+      "Přidejte rozmačkané banány a krátce promíchejte.",
+      "Mouku smíchejte s kypřicím práškem a špetkou soli a postupně ji vmíchejte do těsta, dokud nevznikne hladká hmota.",
+      "Podle chuti vmíchejte nasekané vlašské ořechy.",
+      "Těsto přelijte do formy, povrch uhlaďte a pečte zhruba 50 až 55 minut, dokud špejle nevyjde čistá.",
+      "Hotový chlebíček nechte ve formě 10 minut zchladnout, poté ho vyklopte na mřížku a nechte úplně vychladnout."
+    ],
+    "servings": 8,
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 55,
+    "tags": [
+      "dezert",
+      "snídaně",
+      "pečení"
+    ],
+    "ingredients": [
+      {
+        "name": "Banány",
+        "amount": "3",
+        "unit": "ks"
+      },
+      {
+        "name": "Hladká mouka",
+        "amount": "250",
+        "unit": "g"
+      },
+      {
+        "name": "Cukr krupice",
+        "amount": "120",
+        "unit": "g"
+      },
+      {
+        "name": "Máslo",
+        "amount": "100",
+        "unit": "g"
+      },
+      {
+        "name": "Vejce",
+        "amount": "2",
+        "unit": "ks"
+      },
+      {
+        "name": "Kypřicí prášek do pečiva",
+        "amount": "1",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Vanilkový cukr",
+        "amount": "1",
+        "unit": "par"
+      },
+      {
+        "name": "Vlašské ořechy",
+        "amount": "60",
+        "unit": "g"
+      },
+      {
+        "name": "Sůl",
+        "amount": "",
+        "unit": "lzicka"
+      }
+    ],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1569762404472-026308ba6b64?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1632931057819-4eefffa8e007?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1606101204735-85ad3a8bfd81?w=800&q=80&auto=format&fit=crop"
+    ]
+  },
+  {
+    "title": "Jablečný crumble",
+    "description": "Teplý jablečný crumble s křupavou máslovou drobenkou a šťavnatými jablky s vůní skořice. Skvělý podzimní dezert, který chutná nejlépe ještě teplý s kopečkem zmrzliny.",
+    "steps": [
+      "Troubu předehřejte na 180 °C a zapékací misku vymažte trochou másla.",
+      "Jablka oloupejte, zbavte jádřinců a nakrájejte na menší kostky.",
+      "Jablka promíchejte s lžící cukru, skořicí a citronovou šťávou a rozprostřete je do zapékací misky.",
+      "V míse smíchejte mouku s cukrem a přidejte studené máslo nakrájené na kostičky.",
+      "Konečky prstů vetřete máslo do mouky, dokud nevznikne hrubá drobenka.",
+      "Drobenku rovnoměrně rozprostřete přes jablka tak, aby je celá pokryla.",
+      "Pečte v troubě 35 až 40 minut, dokud není drobenka zlatavá a jablka pod ní bublají.",
+      "Crumble nechte pár minut odpočinout a podávejte teplý, ideálně s vanilkovou zmrzlinou nebo šlehačkou."
+    ],
+    "servings": 4,
+    "prepTimeMinutes": 20,
+    "cookTimeMinutes": 40,
+    "tags": [
+      "dezert",
+      "pečení",
+      "podzimní"
+    ],
+    "ingredients": [
+      {
+        "name": "Jablka",
+        "amount": "700",
+        "unit": "g"
+      },
+      {
+        "name": "Hladká mouka",
+        "amount": "150",
+        "unit": "g"
+      },
+      {
+        "name": "Máslo",
+        "amount": "100",
+        "unit": "g"
+      },
+      {
+        "name": "Cukr krupice",
+        "amount": "100",
+        "unit": "g"
+      },
+      {
+        "name": "Mletá skořice",
+        "amount": "1",
+        "unit": "lzicka"
+      },
+      {
+        "name": "Citronová šťáva",
+        "amount": "1",
+        "unit": "lzice"
+      }
+    ],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1589462286900-15610446ff76?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1568571780765-9276ac8b75a2?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1506127946181-abb01a32593c?w=800&q=80&auto=format&fit=crop"
+    ]
+  }
+]

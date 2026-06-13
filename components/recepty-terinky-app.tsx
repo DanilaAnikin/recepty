@@ -72,6 +72,7 @@ type RecipeFormState = {
   recipeId: number | null;
   title: string;
   description: string;
+  stepsText: string;
   imagePath: string | null;
   servings: string;
   prepTime: string;
@@ -393,6 +394,7 @@ export function ReceptyTerinkyApp() {
       recipeId: null,
       title: `${recipe.title} (kopie)`,
       description: recipe.description,
+      stepsText: recipe.steps && recipe.steps.length > 0 ? recipe.steps.join("\n") : "",
       imagePath: recipe.imagePath,
       servings: typeof recipe.servings === "number" ? String(recipe.servings) : "",
       prepTime: typeof recipe.prepTimeMinutes === "number" ? String(recipe.prepTimeMinutes) : "",
@@ -576,6 +578,7 @@ export function ReceptyTerinkyApp() {
             recipeId: recipe.id,
             title: recipe.title,
             description: recipe.description,
+            stepsText: recipe.steps && recipe.steps.length > 0 ? recipe.steps.join("\n") : "",
             imagePath: recipe.imagePath,
             servings: typeof recipe.servings === "number" ? String(recipe.servings) : "",
             prepTime:
@@ -598,6 +601,7 @@ export function ReceptyTerinkyApp() {
             recipeId: null,
             title: "",
             description: "",
+            stepsText: "",
             imagePath: null,
             servings: "",
             prepTime: "",
@@ -731,14 +735,17 @@ export function ReceptyTerinkyApp() {
       const prepTimeMinutes = parsePositiveInt(recipeForm.prepTime);
       const cookTimeMinutes = parsePositiveInt(recipeForm.cookTime);
       const tags = parseTags(recipeForm.tagsText);
+      const steps = parseSteps(recipeForm.stepsText);
 
       const now = new Date().toISOString();
       const recipe: Recipe = recipeForm.recipeId
         ? {
+            // Spread zachová např. imageUrls (galerie ze seed receptů) i ostatní pole.
             ...(current.recipes.find((item) => item.id === recipeForm.recipeId) as Recipe),
             title: recipeForm.title.trim(),
             normalizedTitle: normalizeText(recipeForm.title),
             description: recipeForm.description.trim(),
+            steps,
             imagePath: recipeForm.imagePath,
             servings,
             prepTimeMinutes,
@@ -752,7 +759,9 @@ export function ReceptyTerinkyApp() {
             title: recipeForm.title.trim(),
             normalizedTitle: normalizeText(recipeForm.title),
             description: recipeForm.description.trim(),
+            steps,
             imagePath: recipeForm.imagePath,
+            imageUrls: [],
             servings,
             prepTimeMinutes,
             cookTimeMinutes,
@@ -1066,7 +1075,7 @@ export function ReceptyTerinkyApp() {
                 onAction={() => openRecipeForm()}
               />
             ) : (
-              <div className="content-stack">
+              <div className="content-stack recipe-list">
                 {recipeEntries.map(({ recipe, match }) => {
                   const recipeTotalTime = formatTotalTime(
                     recipe.prepTimeMinutes,
@@ -1081,7 +1090,7 @@ export function ReceptyTerinkyApp() {
                       className="recipe-card-main"
                       onClick={() => setRecipeDetailId(recipe.id)}
                     >
-                      <RecipeImage path={recipe.imagePath} alt={recipe.title} />
+                      <RecipeImage path={recipe.imageUrls?.[0] ?? recipe.imagePath} alt={recipe.title} />
 
                       <div className="recipe-card-copy">
                         <h2>{recipe.title}</h2>
@@ -1600,9 +1609,10 @@ export function ReceptyTerinkyApp() {
               </label>
 
               <label className="field-stack">
-                <span>Postup nebo poznámka</span>
+                <span>Popis / poznámka</span>
                 <textarea
-                  rows={5}
+                  rows={3}
+                  placeholder="Krátký popis jídla nebo poznámka"
                   value={recipeForm.description}
                   onChange={(event) =>
                     setRecipeForm((current) =>
@@ -1617,7 +1627,26 @@ export function ReceptyTerinkyApp() {
                 />
               </label>
 
-              <div className="inline-fields">
+              <label className="field-stack">
+                <span>Postup (každý krok na nový řádek)</span>
+                <textarea
+                  rows={6}
+                  placeholder={"1. krok\n2. krok\n3. krok"}
+                  value={recipeForm.stepsText}
+                  onChange={(event) =>
+                    setRecipeForm((current) =>
+                      current
+                        ? {
+                            ...current,
+                            stepsText: event.target.value,
+                          }
+                        : current,
+                    )
+                  }
+                />
+              </label>
+
+              <div className="inline-fields recipe-meta-fields">
                 <label className="field-stack">
                   <span>Počet porcí</span>
                   <input
@@ -1903,8 +1932,36 @@ export function ReceptyTerinkyApp() {
                 </div>
               </div>
 
-              <RecipeImage path={selectedRecipe.imagePath} alt={selectedRecipe.title} large />
+              <RecipeImage
+                path={selectedRecipe.imageUrls?.[0] ?? selectedRecipe.imagePath}
+                alt={selectedRecipe.title}
+                large
+              />
             </section>
+
+            {(selectedRecipe.imageUrls ?? []).length > 1 ? (
+              <section className="recipe-gallery">
+                {(selectedRecipe.imageUrls ?? []).slice(1).map((url, index) => (
+                  <div key={url} className="recipe-gallery-item">
+                    <Image
+                      src={url}
+                      alt={`${selectedRecipe.title} – fotka ${index + 2}`}
+                      fill
+                      sizes="(max-width: 560px) 45vw, 240px"
+                      unoptimized
+                    />
+                  </div>
+                ))}
+              </section>
+            ) : null}
+
+            {(selectedRecipe.steps?.length ?? 0) > 0 &&
+            selectedRecipe.description.trim().length > 0 ? (
+              <section className="form-card">
+                <h3>Popis</h3>
+                <p className="multiline-copy">{selectedRecipe.description}</p>
+              </section>
+            ) : null}
 
             <section className="form-card">
               <div className="section-header">
@@ -1979,11 +2036,19 @@ export function ReceptyTerinkyApp() {
 
             <section className="form-card">
               <h3>Postup</h3>
-              <p className="multiline-copy">
-                {selectedRecipe.description.trim().length > 0
-                  ? selectedRecipe.description
-                  : "Zatím bez postupu."}
-              </p>
+              {(selectedRecipe.steps?.length ?? 0) > 0 ? (
+                <ol className="recipe-steps">
+                  {(selectedRecipe.steps ?? []).map((step, index) => (
+                    <li key={index}>{step}</li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="multiline-copy">
+                  {selectedRecipe.description.trim().length > 0
+                    ? selectedRecipe.description
+                    : "Zatím bez postupu."}
+                </p>
+              )}
             </section>
           </div>
         </Modal>
@@ -2416,6 +2481,13 @@ function parseTags(value: string): string[] {
     result.push(tag);
   }
   return result;
+}
+
+function parseSteps(value: string): string[] {
+  return value
+    .split("\n")
+    .map((line) => line.replace(/^\s*\d+[.)]\s*/, "").trim())
+    .filter((line) => line.length > 0);
 }
 
 function formatTotalTime(prep?: number, cook?: number): string | null {
