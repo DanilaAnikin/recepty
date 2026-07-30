@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+.dart_tool
+build
+android
+ios
+npm-debug.log
+.env*
+Dockerfile
+.dockerignore
