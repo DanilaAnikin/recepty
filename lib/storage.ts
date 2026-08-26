@@ -4,6 +4,7 @@ import {
   BACKUP_KEY,
   STORAGE_KEY,
   createInitialState,
+  ensureSeedData,
   normalizeState,
   parseStoredState,
   type AppState,
@@ -32,6 +33,19 @@ const STORE_STATE = "state";
 const STORE_IMAGES = "images";
 const STORE_BACKUPS = "backups";
 const STATE_KEY = "current";
+
+/**
+ * Záchranný snapshot v localStorage.
+ *
+ * Zápis do IndexedDB je asynchronní a prohlížeč ho při zavírání záložky klidně
+ * utne — poslední akce uživatele by se tak dala ztratit. `localStorage.setItem`
+ * je naproti tomu synchronní a stihne se doběhnout ještě v `pagehide`.
+ *
+ * Slouží *jen* jako záchranná síť: při dalším startu se použije, když je
+ * novější než to, co je v IndexedDB, a hned se zase zahodí. Fotky v něm
+ * nejsou (ty jsou jako Blob zvlášť), takže se do kvóty localStorage vejde.
+ */
+const RECOVERY_KEY = "recepty-terinky.next.v1.recovery";
 
 /** Kolik automatických snapshotů se drží pro případ, že se data pokazí. */
 export const MAX_BACKUPS = 5;
@@ -170,8 +184,61 @@ export async function storageEstimate(): Promise<{ usage: number; quota: number 
 // ---------------------------------------------------------------------------
 
 /**
+ * Uloží záchranný snapshot. Musí být synchronní — volá se z `pagehide`,
+ * kde na asynchronní zápis do IndexedDB už není čas.
+ */
+export function saveRecoverySnapshot(state: AppState): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+  try {
+    window.localStorage.setItem(RECOVERY_KEY, JSON.stringify(state));
+  } catch {
+    // Plná kvóta localStorage nesmí shodit odchod ze stránky. Hlavní úložiště
+    // je stejně IndexedDB — tohle je jen pojistka.
+  }
+}
+
+export function clearRecoverySnapshot(): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+  try {
+    window.localStorage.removeItem(RECOVERY_KEY);
+  } catch {
+    // Nevadí.
+  }
+}
+
+function readRecoverySnapshot(): AppState | null {
+  try {
+    const raw = window.localStorage.getItem(RECOVERY_KEY);
+    if (!raw) {
+      return null;
+    }
+    return normalizeState(JSON.parse(raw));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Vybere novější ze dvou verzí stavu podle `revision`.
+ * Při shodě vyhrává IndexedDB — tam data patří.
+ */
+function pickNewer(stored: AppState | null, recovery: AppState | null): AppState | null {
+  if (!recovery) {
+    return stored;
+  }
+  if (!stored) {
+    return recovery;
+  }
+  return recovery.revision > stored.revision ? recovery : stored;
+}
+
+/**
  * Načte stav. Pořadí zdrojů:
- * 1. IndexedDB (aktuální úložiště),
+ * 1. IndexedDB (aktuální úložiště), případně novější záchranný snapshot,
  * 2. localStorage (data z předchozích verzí aplikace — jednorázově se přenesou),
  * 3. čerstvý naseedovaný stav.
  */
@@ -186,8 +253,22 @@ export async function loadState(): Promise<AppState> {
     );
     resolvedKind = "indexeddb";
 
+    const recovery = readRecoverySnapshot();
+
     if (stored !== undefined && stored !== null) {
-      return normalizeState(stored);
+      const winner = pickNewer(normalizeState(stored), recovery);
+      if (recovery && winner === recovery) {
+        // Snapshot byl novější — dopiš ho do hlavního úložiště a zahoď.
+        await saveStateNow(recovery);
+      }
+      clearRecoverySnapshot();
+      return winner ?? createInitialState();
+    }
+
+    if (recovery) {
+      await saveStateNow(recovery);
+      clearRecoverySnapshot();
+      return recovery;
     }
 
     // Prázdná IndexedDB + data v localStorage = upgrade z předchozí verze.
@@ -200,7 +281,9 @@ export async function loadState(): Promise<AppState> {
       return migrated;
     }
 
-    const fresh = createInitialState();
+    // `createInitialState` naseeduje jen ingredience — výchozí recepty dolije
+    // až `ensureSeedData`. Bez toho by první spuštění skončilo prázdnou kuchařkou.
+    const fresh = ensureSeedData(createInitialState());
     await saveStateNow(fresh);
     return fresh;
   } catch (error) {
@@ -253,8 +336,17 @@ export type StatePersister = {
 };
 
 /**
- * Debouncovaný zapisovač. Bez něj se celý stav ukládal při každé změně —
- * u psaní do formuláře to znamenalo desítky zápisů za sekundu.
+ * Zapisovač s náběžnou hranou a doběhem.
+ *
+ * Bez debounce se celý stav ukládal při každé změně — u psaní do formuláře to
+ * znamenalo desítky zápisů za sekundu. Samotný debounce by ale zase nechal
+ * okno, ve kterém uživatel něco udělá a hned zavře záložku; `pagehide` flush
+ * je jen best-effort, protože zápis do IndexedDB je asynchronní a navigace ho
+ * může utnout.
+ *
+ * Proto se první změna po klidu zapisuje **okamžitě** a teprve další změny
+ * v okně `delayMs` se slévají. Jedna akce uživatele je tak na disku prakticky
+ * hned, a přitom rychlé psaní pořád nedělá zápis na každý znak.
  */
 export function createStatePersister(
   delayMs = 400,
@@ -263,6 +355,8 @@ export function createStatePersister(
   let timer: ReturnType<typeof setTimeout> | null = null;
   let pending: AppState | null = null;
   let inFlight: Promise<void> = Promise.resolve();
+  /** Kdy naposledy odešel zápis — určuje, jestli je změna "první po klidu". */
+  let lastWriteAt = 0;
 
   const write = async () => {
     const state = pending;
@@ -270,6 +364,7 @@ export function createStatePersister(
     if (!state) {
       return;
     }
+    lastWriteAt = Date.now();
     try {
       await saveStateNow(state);
     } catch (error) {
@@ -277,15 +372,29 @@ export function createStatePersister(
     }
   };
 
+  const queueWrite = () => {
+    inFlight = inFlight.then(write);
+  };
+
   return {
     schedule(state) {
       pending = state;
+
       if (timer !== null) {
         clearTimeout(timer);
+        timer = null;
       }
+
+      if (Date.now() - lastWriteAt >= delayMs) {
+        // První změna po klidu — zapiš rovnou, ať se nedá ztratit.
+        lastWriteAt = Date.now();
+        queueWrite();
+        return;
+      }
+
       timer = setTimeout(() => {
         timer = null;
-        inFlight = inFlight.then(write);
+        queueWrite();
       }, delayMs);
     },
     async flush() {
@@ -293,7 +402,7 @@ export function createStatePersister(
         clearTimeout(timer);
         timer = null;
       }
-      inFlight = inFlight.then(write);
+      queueWrite();
       await inFlight;
     },
     cancel() {
@@ -333,10 +442,20 @@ function createImageKey(): string {
   return `img_${random}`;
 }
 
+/**
+ * Klíče fotek, které vznikly v tomhle běhu a ještě je žádný uložený recept
+ * nereferencuje — typicky fotka nahraná do rozepsaného formuláře.
+ *
+ * Úklid osiřelých fotek je musí přeskočit, jinak by uživateli zmizela fotka
+ * pod rukama dřív, než recept stihne uložit.
+ */
+const unreferencedNewImageKeys = new Set<string>();
+
 /** Uloží fotku jako Blob a vrátí klíč, kterým se na ni recept odkazuje. */
 export async function putImage(blob: Blob): Promise<string> {
   const key = createImageKey();
   await runTransaction(STORE_IMAGES, "readwrite", (store) => store.put(blob, key));
+  unreferencedNewImageKeys.add(key);
   return key;
 }
 
@@ -368,6 +487,7 @@ export async function getImageUrl(key: string): Promise<string | null> {
 }
 
 export async function deleteImage(key: string): Promise<void> {
+  unreferencedNewImageKeys.delete(key);
   const cached = objectUrlCache.get(key);
   if (cached) {
     URL.revokeObjectURL(cached);
@@ -401,13 +521,19 @@ export async function pruneOrphanImages(state: AppState): Promise<number> {
       }
     }
 
+    // Fotka, která se už v nějakém receptu objevila, je bezpečně uložená —
+    // ochranu čerstvých klíčů u ní můžeme pustit.
+    for (const key of referenced) {
+      unreferencedNewImageKeys.delete(key);
+    }
+
     const allKeys = await runTransaction<IDBValidKey[]>(STORE_IMAGES, "readonly", (store) =>
       store.getAllKeys(),
     );
 
     const orphans = allKeys
       .map((key) => `${key}`)
-      .filter((key) => !referenced.has(key));
+      .filter((key) => !referenced.has(key) && !unreferencedNewImageKeys.has(key));
 
     for (const key of orphans) {
       await deleteImage(key);

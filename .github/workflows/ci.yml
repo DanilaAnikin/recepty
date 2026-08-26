@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+# Nový push na stejnou větev ruší předchozí běh — nemá smysl platit časem
+# za výsledek commitu, který už nikoho nezajímá.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  kontrola:
+    name: Lint, typy a testy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: TypeScript
+        run: npm run typecheck
+
+      - name: Jednotkové testy
+        run: npm test
+
+  e2e:
+    name: E2E (Playwright)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      # Produkční build — e2e testy běží proti tomu, co se doopravdy nasazuje.
+      - name: Build
+        run: npm run build
+
+      - name: Instalace prohlížeče
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E testy
+        run: npm run test:e2e
+
+      - name: Report při selhání
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

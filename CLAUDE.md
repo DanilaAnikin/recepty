@@ -2,60 +2,118 @@
 
 ## Co to je
 
-Osobní kuchařka / recipe manager pro jednoho uživatele (Terinku). Správa receptů, ingrediencí a domácích zásob s dark mode. Původně Flutter app, přepsána do Next.js — Flutter kód v repo zůstává jako legacy. Stav: funkční MVP, deploy na Vercel.
+Osobní kuchařka / recipe manager pro jednoho uživatele (Terinku). Recepty,
+ingredience, domácí zásoby, nákupní seznam, týdenní plán jídel a režim vaření.
+Původně Flutter app, přepsaná do Next.js. Stav: funkční, deploy na Vercel
+(nebo self-hosted přes Docker). Legacy Flutter kód je z repa odstraněný,
+zůstává pod tagem `flutter-legacy-archive`.
 
 ## Stack
 
 - TypeScript, React 19, Next.js 16 (App Router) — `next dev --webpack` (SWC binding padal, viz gotchas)
 - Node 22.x (pinováno v `.nvmrc`: `22.13.1`)
-- Žádný backend, žádná DB — vše v `localStorage` pod klíčem `recepty-terinky.next.v1`
+- Data: **IndexedDB** (`recepty-terinky`), fotky jako `Blob` mimo hlavní záznam
+- Volitelný sync na vlastní server přes `/api/sync`
 - Ikony: `lucide-react`
 - Fonty: Fraunces (display, `--font-display`), Manrope (body, `--font-body`) — Google Fonts přes `next/font`
-- CSS: vlastní custom properties v `globals.css`, žádný CSS framework
+- CSS: vlastní custom properties v `app/globals.css`, žádný CSS framework
 - Lint: ESLint 9 flat config (`eslint.config.mjs`) — `eslint-config-next/core-web-vitals`
-- Deploy: Vercel (Next.js autodetekce)
-- Legacy: Flutter 3.38, Dart, Codemagic CI — nepoužívá se pro produkci
+- Testy: vitest (`lib/**/*.test.ts`) + Playwright (`e2e/`)
+- CI: GitHub Actions (`.github/workflows/ci.yml`) — lint, typecheck, vitest, e2e
 
 ## Architektura
 
-- **Jednastránková SPA**: `app/page.tsx` renderuje jedinou komponentu `<ReceptyTerinkyApp />`.
-- **Mega-komponenta**: veškerá UI logika žije v `components/recepty-terinky-app.tsx` (1668 řádků, `"use client"`). Obsahuje správu stavu (useState), všechny handlery, všechny podkomponenty — vše v jednom souboru.
-- **Doménová vrstva**: `lib/domain.ts` (342 řádků) — typy (`Ingredient`, `Recipe`, `AppState`), serializace/deserializace localStorage, normalizace textu (české locale, `Intl.Collator("cs")`), seed logika, matching receptů.
-- **Seed data**: `assets/seeds/default_ingredients_v1.json` — 300+ defaultních ingrediencí v češtině. Při prvním načtení se naseedují do stavu; při upgrade `SEED_VERSION` se dolijou chybějící.
-- **Seed receptů**: `assets/seeds/default_recipes_v1.json` — 20 defaultních receptů (plná data: popis, kroky `steps[]`, čas, porce, tagy, ingredience, `imageUrls[]` z Unsplash CDN). `applyRecipeSeed` v `domain.ts` je při prvním načtení dolije (gate `RECIPE_SEED_VERSION` + dedup dle názvu) a chybějící ingredience receptů zároveň vytvoří v seznamu (ingredient id se resolvuje dle normalizovaného názvu). Snapshot názvu ingredience v receptu používá hezký název s diakritikou ze seedu.
-- **Theming**: CSS custom properties v `:root` / `:root[data-theme="dark"]`. Theme bootstrap script v `layout.tsx` čte localStorage **před hydratací** aby zabránil FOUC.
-- **Žádný routing**: App Router se používá jen pro layout/page wrapper; navigace mezi "screeny" (recepty, ingredience, detail, formulář) je řešená přes React stav v mega-komponentě.
-- **Obrázky receptů**: uživatelské fotky se ukládají jako (komprimovaný) data URL do localStorage (`imagePath`). Defaultní seed recepty mají navíc `imageUrls[]` — vzdálené odkazy na `images.unsplash.com` (malá stopa v localStorage), povolené v `next.config.ts` přes `images.remotePatterns`. Karta zobrazuje `imageUrls[0] ?? imagePath`, detail má galerii zbylých fotek.
+- **Jednastránková SPA**: `app/page.tsx` renderuje `<ReceptyTerinkyApp />`.
+- **Stav**: `components/app/app-state.tsx` — `useReducer` s historií (Zpět/Znovu,
+  30 kroků). Každá změna dat jde přes `commit(updater, popisek)`, které zvýší
+  `revision` a `updatedAt` (na tom stojí detekce konfliktů při syncu). Změny,
+  které nejsou práce uživatele (motiv, řazení, nastavení syncu), se commitují
+  s `{ track: false }`, aby je Cmd+Z nevracelo.
+- **Mutace**: `lib/mutations.ts` — čisté funkce `AppState -> AppState`. Všechno,
+  co mění data, jde přes ně; komponentám tak zbývá jen `commit(mutations.x)`
+  a chování jde testovat bez Reactu.
+- **Doménová vrstva** (`lib/`, všechno čisté a otestované):
+  - `domain.ts` — typy, seed logika, normalizace (české locale, `Intl.Collator("cs")`)
+  - `migrations.ts` — `SCHEMA_VERSION` + verzované migrace uložených dat
+  - `search.ts` — skórované hledání s tolerancí překlepů
+  - `filters.ts` — skládání filtrů + řazení, které potřebuje výsledek párování se spíží
+  - `units.ts` — převody jednotek a slučování množství
+  - `shopping.ts` — stavba nákupního seznamu
+  - `planner.ts` — týdenní plán (data jako `YYYY-MM-DD` v **lokálním** čase)
+  - `timers.ts` — vytahování časů z textu postupu
+  - `recipe-import.ts` — JSON-LD i volný text
+  - `recipe-text.ts` — recept jako prostý text pro sdílení
+  - `storage.ts` / `images.ts` / `sync.ts` — úložiště, fotky, synchronizace (klient)
+- **Routování**: přes parametry dotazu (`/?tab=nakup&recept=12`), čte se
+  `useSyncExternalStore` v `components/app/use-route.ts`. Cesta zůstává `/`,
+  takže reload funguje bez serverového routování.
+- **Komponenty**: `components/{app,ui,recipes,ingredients,shopping,planner,settings}/`.
+- **Theming**: CSS custom properties v `:root` / `:root[data-theme="dark"]`.
+  Theme bootstrap script v `layout.tsx` čte úložiště **před hydratací** (FOUC).
 
 ## Konvence projektu
 
-- Čeština v UI textech, názvech proměnných občas česky (např. `recipelessNormalize`, ale label texty jako `"Vyber ingredienci"`).
+- Čeština v UI textech i v komentářích.
 - Path alias `@/*` mapuje na root (`tsconfig.json` paths).
-- `strict: true` v TypeScript.
-- Jeden soubor = jedna feature oblast (domain.ts pro logiku, recepty-terinky-app.tsx pro celé UI).
-- Sorting vždy přes `Intl.Collator("cs")` — nepoužívat `localeCompare` přímo.
-- State update přes `updateAppState(updater)` wrapper, který vždy volá `ensureSeedData`.
-- Nové jednotky přidat do `INGREDIENT_UNITS` v `lib/domain.ts`.
+- `strict: true`, target ES2020.
+- Sorting vždy přes `Intl.Collator("cs")` — nepoužívat `localeCompare` přímo
+  (výjimka: `localeCompare(x, "cs")` tam, kde se řadí jednorázově).
+- Nové jednotky přidat do `INGREDIENT_UNITS` v `lib/domain.ts` **a** do
+  `UNIT_META` v `lib/units.ts`, jinak se nebudou umět sečíst.
+- Nová mutace = čistá funkce v `lib/mutations.ts` + test.
+- Nekompatibilní změna tvaru `AppState` = zvýšit `SCHEMA_VERSION` a doplnit
+  migraci do `lib/migrations.ts`.
 
 ## Gotchas a non-obvious chování
 
-- **SWC nefunguje lokálně**: Na dev stroji padá nativní SWC binding. Proto `package.json` explicitně používá `--webpack` flag pro `dev` i `build`. Na Vercelu funguje standardně bez tohoto flagu.
-- **Obrázky jako data URL v localStorage**: Fotky receptů se ukládají jako base64 data URL přímo do localStorage. Při větším počtu receptů s fotkami může localStorage narazit na limit (~5-10 MB dle prohlížeče). `next/image` je použitý s `unoptimized` — obrázky se neoptimalizují.
-- **Zápis do localStorage je obalen try/catch s toastem**: Persistování stavu v komponentě je v `try/catch`; při překročení kvóty (QuotaExceededError) se uživateli ukáže toast s výzvou zálohovat data (Export) nebo uvolnit místo smazáním fotek. Zápis pak neshodí appku.
-- **Theme bootstrap script**: V `layout.tsx` je inline script s `strategy="beforeInteractive"` + `suppressHydrationWarning` na `<html>`. Toto je záměrné — čte localStorage před hydratací aby nastavil `data-theme`. Nemazat.
-- **`ensureSeedData` se volá při každém state update**: Wrapper `updateAppState` vždy provede seed kontrolu a přetřídění. To je záměr, ne bug.
-- **Legacy Flutter kód**: Adresáře `lib/app/`, `lib/core/`, `lib/data/`, `lib/features/`, `lib/shared/`, `android/`, `ios/`, `web/`, `test/` obsahují starý Flutter/Dart kód. Nejsou součástí Next.js buildu, ale jsou v repo. `lib/domain.ts` a `lib/main.dart` koexistují ve stejném `lib/` adresáři.
-- **`recipelessNormalize`** je jen alias na `normalizeText` — vypadá to jako leftover po refactoru, ale je aktivně používaný v komponentě.
-- **`pubspec.yaml` a `codemagic.yaml`** v rootu jsou pro legacy Flutter build. `vercel.json` je pro aktuální Next.js deploy.
+- **SWC nefunguje lokálně**: na dev stroji padá nativní SWC binding, proto
+  `--webpack` v `dev` i `build`. Na Vercelu se nepoužívá.
+- **`next start` neumí `output: standalone`**: pro produkční náhled a e2e testy
+  se používá `node scripts/serve-standalone.mjs`, který navíc dokopíruje
+  `public/` a `.next/static/` (Next je do standalone nedává).
+- **Zápis do IndexedDB je asynchronní** a prohlížeč ho při zavírání záložky
+  utne. Proto se v `pagehide` synchronně odkládá záchranný snapshot do
+  `localStorage` (`RECOVERY_KEY`) a při dalším startu se použije, jen když má
+  vyšší `revision`. Nemazat — bez toho se poslední akce dá ztratit.
+- **Persister má náběžnou hranu**: první změna po klidu se zapisuje okamžitě,
+  teprve další se slévají. Záměr, ne bug — jinak by mezi akcí a zápisem bylo
+  400ms okno.
+- **UI se nevykreslí před hydratací**: dokud `hydrated` není `true`, obsah
+  nahrazuje `.loading-panel`. Kdyby šlo klikat dřív, hydratace by změnu
+  přepsala.
+- **Nákupní seznam je jeden seznam, ne dva.** Odškrtnuté položky se řadí dolů,
+  ale zůstávají ve stejném `<ul>`. Kdyby přeskakovaly do samostatného seznamu,
+  zanikl by původní prvek v DOM a jeho checkbox by se nikdy nestal zaškrtnutým —
+  pro čtečku obrazovky i pro automatizaci nefunkční ovládací prvek.
+- **`.hero-card` má `z-index: 3`**: `backdrop-filter` na hero i na panelech
+  zakládá vlastní stacking context, takže bez toho panel s filtry překryl
+  rozbalenou nabídku motivu.
+- **Flexové položky v plánovači potřebují `min-width: 0`**, jinak dlouhý název
+  receptu roztáhne celý sloupec a vytlačí datum z hlavičky dne.
+- **`ensureSeedData` se volá při každém commitu**: wrapper v reduceru vždycky
+  provede seed kontrolu a přetřídění. Záměr.
+- **`createInitialState()` neseeduje recepty** — ty dolije až `ensureSeedData`.
+  V `loadState` je proto `ensureSeedData(createInitialState())`.
+- **`recipelessNormalize`** už neexistuje (byl to jen alias na `normalizeText`).
+- **`/api/import-recipe` je SSRF-citlivé místo**: sahá na cizí URL ze serveru.
+  Překládá jméno na IP a odmítá privátní rozsahy včetně cloud metadat, ověřuje
+  každé přesměrování zvlášť a omezuje velikost odpovědi. Při úpravách to nerozbít.
+- **Sync neslévá automaticky**: když se změnilo zařízení i server, vrátí se
+  `conflict` a rozhoduje uživatel.
 
 ## Jak něco udělat
 
 - Spustit lokálně: `nvm use && npm install && npm run dev`
-- Build: `npm run build` (lokálně s `--webpack`, na Vercelu standardně)
-- Lint: `npm run lint`
-- Deploy: push na main, Vercel autodetekuje Next.js a buildne
-- Spustit testy: `npm test` (vitest run, jednorázově) nebo `npm run test:watch` (vitest watch). Testy běží přes vitest, config je `vitest.config.ts`, hledají se v `lib/**/*.test.ts`. Pozn.: `test/widget_test.dart` je starý Flutter test, ne vitest.
+- Build: `npm run build`
+- Produkční náhled: `npm run build && node scripts/serve-standalone.mjs`
+- Lint: `npm run lint` · Typy: `npm run typecheck`
+- Testy logiky: `npm test` (vitest) / `npm run test:watch`
+- E2E: `npm run build && npm run test:e2e` (Playwright, desktop + mobil)
+- Deploy: push na main, Vercel autodetekuje Next.js
 
 ## Co tu NENÍ
 
-Neprozkoumával jsem detailně obsah `globals.css` (927 řádků CSS) — viděl jsem jen strukturu proměnných a reset. Flutter legacy kód (`lib/app/`, `lib/features/`, `lib/data/` atd.) jsem procházel jen na úrovni adresářové struktury, ne obsah Dart souborů. Testy pro Next.js verzi neexistují.
+`app/globals.css` má přes 2 300 řádků a neprošel jsem ho celý řádek po řádku —
+znám strukturu proměnných, komponentní bloky a media queries. Vzdálené fotky
+z Unsplash (výchozí recepty) se v tomhle prostředí nedají načíst, takže vzhled
+karet s fotkou jsem viděl jen s prázdným placeholderem.

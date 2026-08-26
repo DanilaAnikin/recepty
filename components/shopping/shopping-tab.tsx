@@ -182,101 +182,77 @@ export function ShoppingTab({ onOpenPlanner }: { onOpenPlanner: () => void }) {
           message={'Otevři recept a klepni na „Do nákupu", nebo si nech seznam vygenerovat z týdenního plánu.'}
         />
       ) : (
-        <>
-          {pending.length > 0 ? (
-            <div className="panel-card shopping-card">
-              <ul className="shopping-list">
-                {pending.map((item) => (
-                  <li key={item.id}>
-                    <label className="shopping-row">
-                      <input
-                        type="checkbox"
-                        checked={false}
-                        onChange={() =>
-                          commit(
-                            (current) => mutations.toggleShoppingItem(current, item.id),
-                            "Odškrtnutí položky",
-                            { track: false },
-                          )
-                        }
-                        aria-label={`Koupeno: ${item.name}`}
-                      />
-                      <span className="shopping-body">
-                        <span className="shopping-name">{item.name}</span>
-                        {formatShoppingAmount(item) ? (
-                          <span className="shopping-amount">{formatShoppingAmount(item)}</span>
-                        ) : null}
-                        {item.recipeTitles && item.recipeTitles.length > 0 ? (
-                          <span className="shopping-origin">{item.recipeTitles.join(" · ")}</span>
-                        ) : null}
-                      </span>
-                    </label>
-                    <button
-                      type="button"
-                      className="icon-button ghost danger"
-                      onClick={() =>
-                        commit(
-                          (current) => mutations.removeShoppingItem(current, item.id),
-                          "Odebrání položky",
-                        )
-                      }
-                      aria-label={`Odebrat ${item.name}`}
-                    >
-                      <Trash2 size={15} aria-hidden="true" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
+        <div className="panel-card shopping-card">
+          {done.length > 0 ? (
+            <div className="section-header">
+              <h3>
+                Zbývá {pending.length}, v košíku {done.length}
+              </h3>
+              <button
+                type="button"
+                className="ghost-button"
+                onClick={() =>
+                  commit(
+                    (current) => mutations.clearCheckedShoppingItems(current),
+                    "Úklid odškrtnutých",
+                  )
+                }
+              >
+                <Check size={15} aria-hidden="true" />
+                Odstranit odškrtnuté
+              </button>
             </div>
           ) : null}
 
-          {done.length > 0 ? (
-            <div className="panel-card shopping-card done-card">
-              <div className="section-header">
-                <h3>V košíku ({done.length})</h3>
+          {/* Jeden seznam, ne dva.
+              Kdyby odškrtnutá položka přeskakovala do samostatného seznamu,
+              zanikl by původní prvek v DOM a jeho checkbox by se nikdy
+              nestal zaškrtnutým — pro čtečku obrazovky (a pro automatizaci)
+              by to vypadalo jako nefunkční ovládací prvek. Takhle zůstává
+              stejný prvek a jen se přeřadí dolů. */}
+          <ul className="shopping-list">
+            {state.shoppingList.map((item) => (
+              <li key={item.id}>
+                <label className={item.checked ? "shopping-row checked" : "shopping-row"}>
+                  <input
+                    type="checkbox"
+                    checked={item.checked}
+                    onChange={() =>
+                      commit(
+                        (current) => mutations.toggleShoppingItem(current, item.id),
+                        item.checked ? "Vrácení položky" : "Odškrtnutí položky",
+                        { track: false },
+                      )
+                    }
+                    aria-label={`Koupeno: ${item.name}`}
+                  />
+                  <span className="shopping-body">
+                    <span className="shopping-name">{item.name}</span>
+                    {formatShoppingAmount(item) ? (
+                      <span className="shopping-amount">{formatShoppingAmount(item)}</span>
+                    ) : null}
+                    {!item.checked && item.recipeTitles && item.recipeTitles.length > 0 ? (
+                      <span className="shopping-origin">{item.recipeTitles.join(" · ")}</span>
+                    ) : null}
+                  </span>
+                </label>
                 <button
                   type="button"
-                  className="ghost-button"
+                  className="icon-button ghost danger"
                   onClick={() =>
                     commit(
-                      (current) => mutations.clearCheckedShoppingItems(current),
-                      "Úklid odškrtnutých",
+                      (current) => mutations.removeShoppingItem(current, item.id),
+                      "Odebrání položky",
                     )
                   }
+                  aria-label={`Odebrat ${item.name}`}
                 >
-                  <Check size={15} aria-hidden="true" />
-                  Odstranit odškrtnuté
+                  <Trash2 size={15} aria-hidden="true" />
                 </button>
-              </div>
-              <ul className="shopping-list">
-                {done.map((item) => (
-                  <li key={item.id}>
-                    <label className="shopping-row checked">
-                      <input
-                        type="checkbox"
-                        checked
-                        onChange={() =>
-                          commit(
-                            (current) => mutations.toggleShoppingItem(current, item.id),
-                            "Vrácení položky",
-                            { track: false },
-                          )
-                        }
-                        aria-label={`Vrátit ${item.name} do seznamu`}
-                      />
-                      <span className="shopping-body">
-                        <span className="shopping-name">{item.name}</span>
-                        {formatShoppingAmount(item) ? (
-                          <span className="shopping-amount">{formatShoppingAmount(item)}</span>
-                        ) : null}
-                      </span>
-                    </label>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-        </>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       {confirmClear ? (

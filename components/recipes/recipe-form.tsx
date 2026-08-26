@@ -103,6 +103,10 @@ export function RecipeForm({
   const [pickerRowId, setPickerRowId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+  /** Fotky odebrané z formuláře — z databáze zmizí až po uložení. */
+  const [removedKeys, setRemovedKeys] = useState<string[]>([]);
+  /** Fotky nahrané v tomhle formuláři — při zrušení se zase uklidí. */
+  const [addedKeys, setAddedKeys] = useState<string[]>([]);
 
   const patch = (updates: Partial<RecipeFormValues>) => {
     setValues((current) => ({ ...current, ...updates }));
@@ -144,6 +148,7 @@ export function RecipeForm({
       const selected = Array.from(files).slice(0, room);
       const keys = await Promise.all(selected.map((file) => storeRecipeImage(file)));
       setValues((current) => ({ ...current, imageKeys: [...current.imageKeys, ...keys] }));
+      setAddedKeys((current) => [...current, ...keys]);
     } catch (error) {
       console.error("Recepty Terinky: uložení fotky selhalo", error);
       showToast("Fotku se nepodařilo uložit.", { tone: "danger" });
@@ -159,10 +164,10 @@ export function RecipeForm({
         : { ...current, imageUrls: current.imageUrls.filter((url) => url !== source) },
     );
     if (isKey) {
-      // Fotka se z databáze maže hned. Kdyby uživatel formulář zavřel bez
-      // uložení, přijde o smazanou fotku — ale zůstala by tam jinak navždy
-      // jako osiřelý blob.
-      void deleteImage(source);
+      // Z databáze se maže až při uložení. Kdyby se mazalo hned a uživatel
+      // formulář zavřel bez uložení, recept by odkazoval na fotku, která už
+      // neexistuje.
+      setRemovedKeys((current) => [...current, source]);
     }
   };
 
@@ -254,8 +259,23 @@ export function RecipeForm({
       return mutations.upsertRecipe(working, recipe);
     }, values.recipeId ? "Úprava receptu" : "Nový recept");
 
+    // Teprve teď je jisté, že odebrané fotky opravdu nikdo nepotřebuje.
+    for (const key of removedKeys) {
+      void deleteImage(key);
+    }
+
     showToast(values.recipeId ? "Recept uložen." : "Recept přidán.");
     onSaved(recipeId);
+  };
+
+  /** Zrušení formuláře uklidí fotky, které v něm vznikly a nikam se neuloží. */
+  const handleClose = () => {
+    for (const key of addedKeys) {
+      if (values.imageKeys.includes(key)) {
+        void deleteImage(key);
+      }
+    }
+    onClose();
   };
 
   const allImages = [
@@ -267,11 +287,11 @@ export function RecipeForm({
     <>
       <Modal
         title={values.recipeId ? "Upravit recept" : "Nový recept"}
-        onClose={onClose}
+        onClose={handleClose}
         size="wide"
         footer={
           <>
-            <button type="button" className="secondary-button" onClick={onClose}>
+            <button type="button" className="secondary-button" onClick={handleClose}>
               Zavřít
             </button>
             <button type="button" className="primary-button" onClick={handleSave}>

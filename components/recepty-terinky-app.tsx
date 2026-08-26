@@ -4,6 +4,7 @@ import {
   CalendarRange,
   ChefHat,
   Database,
+  Loader2,
   Redo2,
   ShoppingBasket,
   ShoppingCart,
@@ -227,21 +228,33 @@ function AppShell() {
         </section>
 
         <div id="hlavni-obsah">
-          {route.tab === "recipes" ? (
-            <RecipesTab
-              onOpenRecipe={openRecipe}
-              onCreateRecipe={() => setRecipeForm(createEmptyForm())}
-              onImportRecipe={() => setImportOpen(true)}
-            />
-          ) : null}
+          {/* Obsah se vykreslí až po načtení dat z IndexedDB. Jinak by aplikace
+              chvíli nabízela prázdný seed jako by to byla skutečná data a rychlé
+              klepnutí by se ztratilo — hydratace by ho hned přepsala. */}
+          {!hydrated ? (
+            <div className="panel-card loading-panel" role="status" aria-live="polite">
+              <Loader2 size={20} className="spin" aria-hidden="true" />
+              Načítám tvoji kuchařku…
+            </div>
+          ) : (
+            <>
+              {route.tab === "recipes" ? (
+                <RecipesTab
+                  onOpenRecipe={openRecipe}
+                  onCreateRecipe={() => setRecipeForm(createEmptyForm())}
+                  onImportRecipe={() => setImportOpen(true)}
+                />
+              ) : null}
 
-          {route.tab === "ingredients" ? <IngredientsTab /> : null}
+              {route.tab === "ingredients" ? <IngredientsTab /> : null}
 
-          {route.tab === "shopping" ? (
-            <ShoppingTab onOpenPlanner={() => navigate({ tab: "planner" })} />
-          ) : null}
+              {route.tab === "shopping" ? (
+                <ShoppingTab onOpenPlanner={() => navigate({ tab: "planner" })} />
+              ) : null}
 
-          {route.tab === "planner" ? <PlannerTab onOpenRecipe={openRecipe} /> : null}
+              {route.tab === "planner" ? <PlannerTab onOpenRecipe={openRecipe} /> : null}
+            </>
+          )}
         </div>
       </main>
 
@@ -266,7 +279,7 @@ function AppShell() {
         })}
       </nav>
 
-      {selectedRecipe && !route.cooking ? (
+      {hydrated && selectedRecipe && !route.cooking ? (
         <RecipeDetail
           recipe={selectedRecipe}
           onClose={closeRecipe}
@@ -276,7 +289,7 @@ function AppShell() {
         />
       ) : null}
 
-      {selectedRecipe && route.cooking ? (
+      {hydrated && selectedRecipe && route.cooking ? (
         <CookMode
           recipe={selectedRecipe}
           servings={selectedRecipe.servings}
@@ -322,8 +335,6 @@ function AppShell() {
       ) : null}
 
       {dataDialogOpen ? <DataDialog onClose={() => setDataDialogOpen(false)} /> : null}
-
-      {!hydrated ? <div className="boot-indicator">Načítám uložená data…</div> : null}
     </div>
   );
 }

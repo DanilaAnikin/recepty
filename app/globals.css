@@ -138,6 +138,10 @@ img {
 }
 
 .hero-card {
+  position: relative;
+  /* Hlavička musí přebít obsah pod sebou, jinak její rozbalovací nabídku
+     překryje panel s filtry (oba mají backdrop-filter = vlastní vrstva). */
+  z-index: 3;
   display: grid;
   gap: 26px;
   padding: 32px;
@@ -1762,6 +1766,7 @@ img {
 .planner-day {
   display: grid;
   gap: 10px;
+  min-width: 0;
   padding: 14px;
   border-radius: 24px;
   background: var(--surface);
@@ -1782,6 +1787,7 @@ img {
 }
 
 .planner-day-header span {
+  flex-shrink: 0;
   color: var(--text-muted);
   font-size: 0.82rem;
 }
@@ -1789,11 +1795,13 @@ img {
 .planner-slots {
   display: grid;
   gap: 8px;
+  min-width: 0;
 }
 
 .planner-slot {
   display: grid;
   gap: 6px;
+  min-width: 0;
   padding: 8px 10px;
   border-radius: 16px;
   background: var(--surface-muted);
@@ -1817,6 +1825,7 @@ img {
   display: flex;
   align-items: center;
   gap: 6px;
+  min-width: 0;
 }
 
 .planner-entry-title {
@@ -2309,4 +2318,91 @@ img {
   @page {
     margin: 14mm;
   }
+}
+
+/* ==========================================================================
+   Mobilní doladění: v kuchyni a v obchodě má mít přednost obsah, ne hlavička
+   ========================================================================== */
+
+@media (max-width: 560px) {
+  /* Marketingový nadpis ustupuje — na telefonu appku otevíráš kvůli seznamu,
+     ne kvůli claimu. Logo aplikaci identifikuje dost. */
+  .hero-copy h1 {
+    display: none;
+  }
+
+  .hero-actions {
+    gap: 6px;
+    justify-content: flex-end;
+  }
+
+  /* Počet zásob je vidět na záložce Ingredience; tady jen krade řádek. */
+  .hero-actions .status-chip {
+    display: none;
+  }
+
+  .hero-actions .icon-button {
+    width: 38px;
+    height: 38px;
+  }
+
+  /* Kompaktnější tlačítka v panelech, ať se vejdou dvě na řádek. */
+  .toolbar-wrap {
+    gap: 8px;
+    justify-content: flex-start;
+  }
+
+  .toolbar-wrap .secondary-button,
+  .toolbar-wrap .primary-button {
+    min-height: 42px;
+    padding: 0 12px;
+    font-size: 0.88rem;
+  }
+
+  /* Odznak u záložky nesmí přidat třetí řádek do spodní navigace. */
+  .bottom-nav-button {
+    position: relative;
+  }
+
+  .bottom-nav-button .tab-badge {
+    position: absolute;
+    top: 2px;
+    left: 50%;
+    transform: translateX(6px);
+    margin: 0;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 4px;
+    font-size: 0.62rem;
+  }
+}
+
+@media (max-width: 560px) {
+  /* Spodní navigace už záložky nabízí — dvojí přepínač je jen šum navíc. */
+  .hero-bottom {
+    display: none;
+  }
+}
+
+/* Akce dostupná jen tam, kde je desktopová hlavička sekce skrytá. */
+.mobile-only-action {
+  display: none;
+}
+
+@media (max-width: 820px) {
+  .mobile-only-action {
+    display: inline-flex;
+  }
+}
+
+/* Stav "načítám data" na místě obsahu — drží rozvržení a jasně říká,
+   že aplikace ještě není připravená k ovládání. */
+.loading-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 220px;
+  color: var(--text-muted);
+  font-weight: 600;
 }

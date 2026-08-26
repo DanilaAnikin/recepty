@@ -213,6 +213,13 @@ export function RecipesTab({
             <Heart size={14} aria-hidden="true" />
             Oblíbené
           </button>
+
+          {/* Import je i tady, ne jen v hlavičce sekce — ta se na mobilu skrývá
+              a bez tohohle by na telefonu nešel recept naimportovat vůbec. */}
+          <button type="button" className="secondary-button mobile-only-action" onClick={onImportRecipe}>
+            <Link2 size={16} aria-hidden="true" />
+            Importovat
+          </button>
         </div>
 
         {filtersExpanded ? (

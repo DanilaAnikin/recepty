@@ -1,56 +1,36 @@
-# Miscellaneous
-*.class
+# Závislosti
+node_modules/
+.pnp
+.pnp.js
+
+# Build
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# Testy
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# Data serverové synchronizace (viz app/api/sync/route.ts)
+.data/
+
+# Prostředí
+.env
+.env.local
+.env.*.local
+.vercel
+
+# Různé
 *.log
 *.pyc
 *.swp
 .DS_Store
-.atom/
-.build/
-.buildlog/
-.history
-.svn/
-.swiftpm/
-migrate_working_dir/
-
-# IntelliJ related
-*.iml
-*.ipr
-*.iws
 .idea/
-
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
-
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
-.dart_tool/
-.flutter-plugins-dependencies
-.pub-cache/
-.pub/
-/build/
-/coverage/
-
-# Node / Next.js
-node_modules/
-.next/
-out/
-npm-debug.log*
-tsconfig.tsbuildinfo
-*.tsbuildinfo
-.env
-.env.local
-.env.*.local
-
-# Symbolication related
-app.*.symbols
-
-# Obfuscation related
-app.*.map.json
-
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
+*.iml
+.history

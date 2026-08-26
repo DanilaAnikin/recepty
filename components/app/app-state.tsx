@@ -8,6 +8,7 @@ import {
   useMemo,
   useReducer,
   useRef,
+  useState,
   type ReactNode,
 } from "react";
 
@@ -18,6 +19,7 @@ import {
   pruneOrphanImages,
   pushBackup,
   requestPersistentStorage,
+  saveRecoverySnapshot,
 } from "@/lib/storage";
 
 /**
@@ -160,17 +162,11 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     hydrated: false,
   }));
 
-  const storageErrorRef = useRef<unknown>(null);
-  const [, forceRender] = useReducer((count: number) => count + 1, 0);
+  // Chyba zápisu je součást vykreslovaného stavu (ukazuje se toast), takže
+  // patří do useState, ne do refu.
+  const [storageError, setStorageError] = useState<unknown>(null);
 
-  const persister = useMemo(
-    () =>
-      createStatePersister(400, (error) => {
-        storageErrorRef.current = error;
-        forceRender();
-      }),
-    [],
-  );
+  const persister = useMemo(() => createStatePersister(400, setStorageError), []);
 
   // Načtení uložených dat. Běží jednou; do té doby se nic nezapisuje, aby
   // prázdný počáteční stav nepřepsal to, co je v databázi.
@@ -198,32 +194,54 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     persister.schedule(historyState.present);
   }, [historyState.hydrated, historyState.present, persister]);
 
-  // Zavření záložky nesmí zahodit posledních 400 ms práce.
+  // Zavření záložky nesmí zahodit rozdělanou práci.
+  //
+  // `persister.flush()` je asynchronní a prohlížeč ho při odchodu ze stránky
+  // klidně utne, proto se zároveň synchronně odloží záchranný snapshot do
+  // localStorage. Ten se při dalším startu použije, jen když je novější.
+  const presentRef = useRef(historyState.present);
+  const hydratedRef = useRef(historyState.hydrated);
+
+  // Zápis do refu patří do efektu, ne do těla renderu — render se může zahodit
+  // a zapsaná hodnota by v refu přesto zůstala.
   useEffect(() => {
-    const flush = () => {
+    presentRef.current = historyState.present;
+    hydratedRef.current = historyState.hydrated;
+  }, [historyState.present, historyState.hydrated]);
+
+  useEffect(() => {
+    const persistNow = () => {
+      if (!hydratedRef.current) {
+        return;
+      }
+      saveRecoverySnapshot(presentRef.current);
       void persister.flush();
     };
-    window.addEventListener("pagehide", flush);
-    document.addEventListener("visibilitychange", flush);
+
+    window.addEventListener("pagehide", persistNow);
+    document.addEventListener("visibilitychange", persistNow);
     return () => {
-      window.removeEventListener("pagehide", flush);
-      document.removeEventListener("visibilitychange", flush);
-      flush();
+      window.removeEventListener("pagehide", persistNow);
+      document.removeEventListener("visibilitychange", persistNow);
+      persistNow();
     };
   }, [persister]);
 
-  // Denní snapshot + úklid fotek, na které už se nikdo neodkazuje.
+  // Snapshot po startu + úklid fotek, na které už se nikdo neodkazuje.
+  //
+  // Úklid se dělá nad *aktuálním* stavem z refu, ne nad tím při hydrataci —
+  // jinak by mohl smazat fotku, kterou uživatel mezitím nahrál do rozepsaného
+  // receptu. Odklad je proto raději delší.
   useEffect(() => {
     if (!historyState.hydrated) {
       return;
     }
     const timer = setTimeout(() => {
-      void pushBackup(historyState.present);
-      void pruneOrphanImages(historyState.present);
-    }, 4000);
+      const current = presentRef.current;
+      void pushBackup(current);
+      void pruneOrphanImages(current);
+    }, 20_000);
     return () => clearTimeout(timer);
-    // Schválně jen při hydrataci — ne při každé změně stavu.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [historyState.hydrated]);
 
   useEffect(() => {
@@ -287,13 +305,10 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       canRedo: historyState.future.length > 0,
       undoLabel: historyState.past.at(-1)?.label ?? null,
       redoLabel: historyState.future[0]?.label ?? null,
-      storageError: storageErrorRef.current,
-      clearStorageError: () => {
-        storageErrorRef.current = null;
-        forceRender();
-      },
+      storageError,
+      clearStorageError: () => setStorageError(null),
     }),
-    [historyState, commit, replaceState, undo, redo],
+    [historyState, commit, replaceState, undo, redo, storageError],
   );
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;
