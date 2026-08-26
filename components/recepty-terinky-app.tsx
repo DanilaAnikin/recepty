@@ -11,7 +11,7 @@ import {
   Undo2,
 } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { resolveTheme, type Recipe } from "@/lib/domain";
 import * as mutations from "@/lib/mutations";
@@ -38,6 +38,9 @@ import { DataDialog } from "@/components/settings/data-dialog";
 import { ShoppingTab } from "@/components/shopping/shopping-tab";
 import { Modal } from "@/components/ui/modal";
 import { MEAL_SLOTS, type MealSlot } from "@/lib/domain";
+
+/** Kolik změn musí ve stavu vzniknout, než má smysl připomínat zálohu. */
+const MIN_REVISION_FOR_BACKUP_NUDGE = 25;
 
 const TABS: Array<{ value: AppTab; label: string; icon: typeof ChefHat }> = [
   { value: "recipes", label: "Recepty", icon: ChefHat },
@@ -103,6 +106,39 @@ function AppShell() {
     );
     clearStorageError();
   }, [storageError, showToast, clearStorageError]);
+
+  // Připomínka zálohy.
+  //
+  // Snapshoty v IndexedDB pomůžou, když se pokazí data — ale ne když si někdo
+  // smaže data prohlížeče nebo přejde na nový telefon. Na to je potřeba soubor,
+  // takže po měsíci bez zálohy jednou (a nevtíravě) připomeneme.
+  //
+  // Čeká se, až v aplikaci něco vlastního opravdu vznikne (`revision`). Nemá
+  // smysl strašit někoho, kdo appku otevřel poprvé a má v ní jen výchozí data.
+  const backupNudgeShown = useRef(false);
+  useEffect(() => {
+    if (!hydrated || backupNudgeShown.current || state.revision < MIN_REVISION_FOR_BACKUP_NUDGE) {
+      return;
+    }
+
+    const lastBackup = state.lastBackupAt ? Date.parse(state.lastBackupAt) : null;
+    const monthAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    if (lastBackup !== null && !Number.isNaN(lastBackup) && lastBackup > monthAgo) {
+      return;
+    }
+
+    backupNudgeShown.current = true;
+    const timer = setTimeout(() => {
+      showToast(
+        lastBackup === null
+          ? "Zálohu sis ještě nikdy nestáhla. Data žijí jen v tomhle prohlížeči."
+          : "Poslední záloha je starší než měsíc.",
+        { action: { label: "Zálohovat", onClick: () => setDataDialogOpen(true) } },
+      );
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [hydrated, state.lastBackupAt, state.revision, showToast]);
 
   // Odkaz na recept, který mezitím zmizel (smazaný, nebo z cizí zálohy).
   useEffect(() => {
