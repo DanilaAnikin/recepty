@@ -28,7 +28,15 @@ import * as mutations from "@/lib/mutations";
 import { useAppState } from "@/components/app/app-state";
 import { useToast } from "@/components/app/toast";
 import { Modal } from "@/components/ui/modal";
-import { ConfirmDialog, EmptyState } from "@/components/ui/primitives";
+import { ConfirmDialog, EmptyState, VirtualList } from "@/components/ui/primitives";
+
+type IngredientRow =
+  | { kind: "header"; letter: string }
+  | { kind: "item"; ingredient: Ingredient };
+
+/** Výšky řádků musí sedět s CSS, jinak by virtualizace počítala špatné posuny. */
+const HEADER_ROW_HEIGHT = 38;
+const ITEM_ROW_HEIGHT = 64;
 
 export function IngredientsTab() {
   const { state, commit } = useAppState();
@@ -63,17 +71,25 @@ export function IngredientsTab() {
     });
   }, [state.ingredients, query, filter, pantryByIngredient]);
 
-  const grouped = useMemo(() => {
-    const groups: Array<{ letter: string; items: Ingredient[] }> = [];
+  /**
+   * Seznam se vykresluje virtualizovaně, takže skupiny musí být "plochý"
+   * proud řádků — nadpis písmene je prostě další řádek, jen nižší.
+   * Bez toho by se při 300+ ingrediencích překreslovalo všech ~1500 uzlů
+   * při každém stisku klávesy ve vyhledávání.
+   */
+  const rows = useMemo(() => {
+    const result: IngredientRow[] = [];
+    let currentLetter: string | null = null;
+
     for (const ingredient of filtered) {
-      const last = groups.at(-1);
-      if (!last || last.letter !== ingredient.firstLetter) {
-        groups.push({ letter: ingredient.firstLetter, items: [ingredient] });
-      } else {
-        last.items.push(ingredient);
+      if (ingredient.firstLetter !== currentLetter) {
+        currentLetter = ingredient.firstLetter;
+        result.push({ kind: "header", letter: currentLetter });
       }
+      result.push({ kind: "item", ingredient });
     }
-    return groups;
+
+    return result;
   }, [filtered]);
 
   const handleSaveName = () => {
@@ -219,7 +235,7 @@ export function IngredientsTab() {
         </div>
       </div>
 
-      {grouped.length === 0 ? (
+      {rows.length === 0 ? (
         <EmptyState
           title="Nic nenalezeno"
           message={
@@ -232,99 +248,36 @@ export function IngredientsTab() {
         />
       ) : (
         <div className="panel-card ingredient-list-card">
-          {grouped.map((group) => (
-            <div key={group.letter} className="ingredient-group">
-              <h3>{group.letter}</h3>
-              <div className="ingredient-group-list">
-                {group.items.map((ingredient) => {
-                  const pantryItem = pantryByIngredient.get(ingredient.id);
-                  const days = daysUntilExpiry(pantryItem?.expiresAt);
-
-                  return (
-                    <div key={ingredient.id} className="ingredient-row">
-                      <label className="ingredient-home-toggle">
-                        <input
-                          type="checkbox"
-                          checked={pantryItem !== undefined}
-                          onChange={() =>
-                            commit(
-                              (current) => mutations.togglePantryItem(current, ingredient.id),
-                              "Změna zásob",
-                            )
-                          }
-                          aria-label={`${ingredient.name} — mám doma`}
-                        />
-                      </label>
-
-                      <span className="ingredient-name">
-                        {ingredient.name}
-                        {pantryItem?.quantity ? (
-                          <span className="ingredient-qty">
-                            {pantryItem.quantity}
-                            {pantryItem.unit ? ` ${unitLabelOf(pantryItem.unit)}` : ""}
-                          </span>
-                        ) : null}
-                        {days !== null ? (
-                          <span className={days < 0 ? "expiry-chip past" : days <= 3 ? "expiry-chip soon" : "expiry-chip"}>
-                            <CalendarClock size={11} aria-hidden="true" />
-                            {expiryPhrase(days)}
-                          </span>
-                        ) : null}
-                      </span>
-
-                      {pantryItem ? (
-                        <button
-                          type="button"
-                          className="icon-button ghost"
-                          onClick={() => setPantryEditor(ingredient)}
-                          aria-label={`Upravit zásobu ${ingredient.name}`}
-                        >
-                          <ShoppingBasket size={16} aria-hidden="true" />
-                        </button>
-                      ) : null}
-
-                      <button
-                        type="button"
-                        className={ingredient.isFavorite ? "icon-button favorite active" : "icon-button favorite"}
-                        onClick={() =>
-                          commit(
-                            (current) => mutations.toggleIngredientFavorite(current, ingredient.id),
-                            "Oblíbená ingredience",
-                          )
-                        }
-                        aria-label={ingredient.isFavorite ? "Odebrat z oblíbených" : "Přidat do oblíbených"}
-                        aria-pressed={ingredient.isFavorite}
-                      >
-                        {ingredient.isFavorite ? (
-                          <Heart size={16} aria-hidden="true" />
-                        ) : (
-                          <HeartOff size={16} aria-hidden="true" />
-                        )}
-                      </button>
-
-                      <button
-                        type="button"
-                        className="icon-button ghost"
-                        onClick={() => setEditing({ ingredient, name: ingredient.name })}
-                        aria-label={`Přejmenovat ${ingredient.name}`}
-                      >
-                        <Pencil size={16} aria-hidden="true" />
-                      </button>
-
-                      <button
-                        type="button"
-                        className="icon-button danger"
-                        onClick={() => setConfirmDelete(ingredient)}
-                        aria-label={`Smazat ${ingredient.name}`}
-                      >
-                        <Trash2 size={16} aria-hidden="true" />
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+          <VirtualList
+            items={rows}
+            rowHeight={(row) => (row.kind === "header" ? HEADER_ROW_HEIGHT : ITEM_ROW_HEIGHT)}
+            maxHeight={640}
+            renderRow={(row) =>
+              row.kind === "header" ? (
+                <h3 className="ingredient-letter">{row.letter}</h3>
+              ) : (
+                <IngredientListRow
+                  ingredient={row.ingredient}
+                  pantryItem={pantryByIngredient.get(row.ingredient.id)}
+                  onTogglePantry={() =>
+                    commit(
+                      (current) => mutations.togglePantryItem(current, row.ingredient.id),
+                      "Změna zásob",
+                    )
+                  }
+                  onEditPantry={() => setPantryEditor(row.ingredient)}
+                  onToggleFavorite={() =>
+                    commit(
+                      (current) => mutations.toggleIngredientFavorite(current, row.ingredient.id),
+                      "Oblíbená ingredience",
+                    )
+                  }
+                  onRename={() => setEditing({ ingredient: row.ingredient, name: row.ingredient.name })}
+                  onDelete={() => setConfirmDelete(row.ingredient)}
+                />
+              )
+            }
+          />
         </div>
       )}
 
@@ -389,6 +342,101 @@ export function IngredientsTab() {
         />
       ) : null}
     </section>
+  );
+}
+
+/** Jeden řádek seznamu ingrediencí. */
+function IngredientListRow({
+  ingredient,
+  pantryItem,
+  onTogglePantry,
+  onEditPantry,
+  onToggleFavorite,
+  onRename,
+  onDelete,
+}: {
+  ingredient: Ingredient;
+  pantryItem: PantryItem | undefined;
+  onTogglePantry: () => void;
+  onEditPantry: () => void;
+  onToggleFavorite: () => void;
+  onRename: () => void;
+  onDelete: () => void;
+}) {
+  const days = daysUntilExpiry(pantryItem?.expiresAt);
+
+  return (
+    <div className="ingredient-row">
+      <label className="ingredient-home-toggle">
+        <input
+          type="checkbox"
+          checked={pantryItem !== undefined}
+          onChange={onTogglePantry}
+          aria-label={`${ingredient.name} — mám doma`}
+        />
+      </label>
+
+      <span className="ingredient-name">
+        {ingredient.name}
+        {pantryItem?.quantity ? (
+          <span className="ingredient-qty">
+            {pantryItem.quantity}
+            {pantryItem.unit ? ` ${unitLabelOf(pantryItem.unit)}` : ""}
+          </span>
+        ) : null}
+        {days !== null ? (
+          <span
+            className={days < 0 ? "expiry-chip past" : days <= 3 ? "expiry-chip soon" : "expiry-chip"}
+          >
+            <CalendarClock size={11} aria-hidden="true" />
+            {expiryPhrase(days)}
+          </span>
+        ) : null}
+      </span>
+
+      {pantryItem ? (
+        <button
+          type="button"
+          className="icon-button ghost"
+          onClick={onEditPantry}
+          aria-label={`Upravit zásobu ${ingredient.name}`}
+        >
+          <ShoppingBasket size={16} aria-hidden="true" />
+        </button>
+      ) : null}
+
+      <button
+        type="button"
+        className={ingredient.isFavorite ? "icon-button favorite active" : "icon-button favorite"}
+        onClick={onToggleFavorite}
+        aria-label={ingredient.isFavorite ? "Odebrat z oblíbených" : "Přidat do oblíbených"}
+        aria-pressed={ingredient.isFavorite}
+      >
+        {ingredient.isFavorite ? (
+          <Heart size={16} aria-hidden="true" />
+        ) : (
+          <HeartOff size={16} aria-hidden="true" />
+        )}
+      </button>
+
+      <button
+        type="button"
+        className="icon-button ghost"
+        onClick={onRename}
+        aria-label={`Přejmenovat ${ingredient.name}`}
+      >
+        <Pencil size={16} aria-hidden="true" />
+      </button>
+
+      <button
+        type="button"
+        className="icon-button danger"
+        onClick={onDelete}
+        aria-label={`Smazat ${ingredient.name}`}
+      >
+        <Trash2 size={16} aria-hidden="true" />
+      </button>
+    </div>
   );
 }
 

@@ -188,11 +188,14 @@ export function StarRating({
 }
 
 /**
- * Jednoduchá virtualizace svislého seznamu s pevnou výškou řádku.
+ * Virtualizace svislého seznamu.
  *
  * Seznam ingrediencí má přes 300 položek a překresloval se celý při každém
  * stisku klávesy ve vyhledávání. Tady se vykreslí jen to, co je vidět,
  * plus `overscan` řádků nad a pod.
+ *
+ * `rowHeight` smí být i funkce — seznam ingrediencí střídá nadpisy písmen
+ * a samotné řádky, které mají různou výšku.
  */
 export function VirtualList<T>({
   items,
@@ -204,7 +207,7 @@ export function VirtualList<T>({
   className,
 }: {
   items: T[];
-  rowHeight: number;
+  rowHeight: number | ((item: T, index: number) => number);
   maxHeight: number;
   overscan?: number;
   renderRow: (item: T, index: number) => ReactNode;
@@ -229,18 +232,48 @@ export function VirtualList<T>({
     return () => observer.disconnect();
   }, [maxHeight]);
 
+  /** Kumulativní posuny řádků; `offsets[i]` je horní hrana i-tého řádku. */
+  const { offsets, totalHeight } = useMemo(() => {
+    const result = new Array<number>(items.length + 1);
+    result[0] = 0;
+    for (let index = 0; index < items.length; index += 1) {
+      const height = typeof rowHeight === "function" ? rowHeight(items[index], index) : rowHeight;
+      result[index + 1] = result[index] + height;
+    }
+    return { offsets: result, totalHeight: result[items.length] };
+  }, [items, rowHeight]);
+
   const { startIndex, endIndex } = useMemo(() => {
+    if (items.length === 0) {
+      return { startIndex: 0, endIndex: 0 };
+    }
+
     // Po zúžení filtru může být uložená pozice za koncem kratšího seznamu.
     // Ořízneme ji při výpočtu — je to levnější a spolehlivější než dorovnávat
     // scroll v efektu, který by vyvolal další render.
-    const maxScrollTop = Math.max(0, items.length * rowHeight - viewportHeight);
-    const effectiveScrollTop = Math.min(scrollTop, maxScrollTop);
+    const effectiveScrollTop = Math.min(scrollTop, Math.max(0, totalHeight - viewportHeight));
 
-    const visibleCount = Math.ceil(viewportHeight / rowHeight);
-    const start = Math.max(0, Math.floor(effectiveScrollTop / rowHeight) - overscan);
-    const end = Math.min(items.length, start + visibleCount + overscan * 2);
-    return { startIndex: start, endIndex: end };
-  }, [items.length, overscan, rowHeight, scrollTop, viewportHeight]);
+    // Binární vyhledání prvního řádku, který ještě zasahuje do viewportu.
+    let low = 0;
+    let high = items.length - 1;
+    while (low < high) {
+      const middle = (low + high) >> 1;
+      if (offsets[middle + 1] <= effectiveScrollTop) {
+        low = middle + 1;
+      } else {
+        high = middle;
+      }
+    }
+
+    const start = Math.max(0, low - overscan);
+    const viewportBottom = effectiveScrollTop + viewportHeight;
+    let end = start;
+    while (end < items.length && offsets[end] < viewportBottom) {
+      end += 1;
+    }
+
+    return { startIndex: start, endIndex: Math.min(items.length, end + overscan) };
+  }, [items.length, offsets, overscan, scrollTop, totalHeight, viewportHeight]);
 
   if (items.length === 0 && emptyState) {
     return <>{emptyState}</>;
@@ -255,20 +288,27 @@ export function VirtualList<T>({
       style={{ maxHeight }}
       onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
     >
-      <div style={{ height: items.length * rowHeight, position: "relative" }}>
+      <div style={{ height: totalHeight, position: "relative" }}>
         <div
           style={{
             position: "absolute",
-            top: startIndex * rowHeight,
+            top: offsets[startIndex],
             left: 0,
             right: 0,
           }}
         >
-          {visible.map((item, offset) => (
-            <div key={startIndex + offset} style={{ height: rowHeight }} className="virtual-row">
-              {renderRow(item, startIndex + offset)}
-            </div>
-          ))}
+          {visible.map((item, offset) => {
+            const index = startIndex + offset;
+            return (
+              <div
+                key={index}
+                style={{ height: offsets[index + 1] - offsets[index] }}
+                className="virtual-row"
+              >
+                {renderRow(item, index)}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

@@ -9,7 +9,11 @@
   "orientation": "portrait-primary",
   "background_color": "#fff6f2",
   "theme_color": "#c65670",
-  "categories": ["food", "lifestyle", "productivity"],
+  "categories": [
+    "food",
+    "lifestyle",
+    "productivity"
+  ],
   "icons": [
     {
       "src": "/icons/icon-192.png",
@@ -41,13 +45,53 @@
       "name": "Nákupní seznam",
       "short_name": "Nákup",
       "url": "/?tab=nakup",
-      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
       "name": "Plán na týden",
       "short_name": "Plán",
       "url": "/?tab=plan",
-      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/desktop-recepty.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Seznam receptů s filtry"
+    },
+    {
+      "src": "/screenshots/desktop-plan.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Týdenní plán jídel"
+    },
+    {
+      "src": "/screenshots/mobil-recepty.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Recepty na telefonu"
+    },
+    {
+      "src": "/screenshots/mobil-nakup.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Nákupní seznam"
     }
   ]
 }

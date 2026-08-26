@@ -2406,3 +2406,24 @@ img {
   color: var(--text-muted);
   font-weight: 600;
 }
+
+/* Nadpis písmene ve virtualizovaném seznamu ingrediencí.
+   Výška musí odpovídat HEADER_ROW_HEIGHT v ingredients-tab.tsx. */
+.ingredient-letter {
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+  margin: 0;
+  padding-bottom: 8px;
+  color: var(--text-muted);
+  letter-spacing: 0.18em;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* Řádek ingredience musí mít pevnou výšku, jinak se rozejde s výpočtem
+   posunů ve virtualizaci (ITEM_ROW_HEIGHT). */
+.ingredient-list-card .ingredient-row {
+  height: 58px;
+}

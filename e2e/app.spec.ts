@@ -215,6 +215,28 @@ test.describe("Režim vaření", () => {
 });
 
 test.describe("Zásoby a trvalost dat", () => {
+  test("seznam ingrediencí se vykresluje virtualizovaně", async ({ page }) => {
+    await openApp(page, "/?tab=ingredience");
+
+    // Seed má přes 300 ingrediencí; v DOM jich smí být jen zlomek.
+    const rendered = await page.locator(".ingredient-row").count();
+    expect(rendered).toBeGreaterThan(0);
+    expect(rendered).toBeLessThan(60);
+
+    // Po odrolování se objeví jiné položky.
+    const firstBefore = await page.locator(".ingredient-name").first().textContent();
+    await page.locator(".ingredient-list-card .virtual-list").evaluate((node) => {
+      node.scrollTop = 4000;
+    });
+    await expect(page.locator(".ingredient-name").first()).not.toHaveText(firstBefore ?? "");
+  });
+
+  test("hledání v ingrediencích zúží seznam", async ({ page }) => {
+    await openApp(page, "/?tab=ingredience");
+    await page.getByLabel("Vyhledat ingredienci").fill("cesnek");
+    await expect(page.locator(".ingredient-name").first()).toContainText("esnek");
+  });
+
   test("označení zásoby přežije načtení stránky", async ({ page }) => {
     await openApp(page, "/?tab=ingredience");
     await page.locator(".ingredient-home-toggle input").first().check();

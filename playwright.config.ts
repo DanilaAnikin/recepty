@@ -47,7 +47,10 @@ export default defineConfig({
   webServer: {
     command: `node scripts/serve-standalone.mjs`,
     url: BASE_URL,
-    reuseExistingServer: !process.env.CI,
+    // Vždycky vlastní server. Sdílení s běžícím procesem sice šetří pár vteřin,
+    // ale zapomenutý server ze staršího buildu pak testuje starý kód a hledá se
+    // to mizerně.
+    reuseExistingServer: false,
     timeout: 60_000,
     env: {
       PORT: `${PORT}`,
