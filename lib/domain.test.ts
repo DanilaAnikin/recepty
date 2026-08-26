@@ -18,10 +18,13 @@ import {
   resolveTheme,
   SEED_VERSION,
   RECIPE_SEED_VERSION,
+  SCHEMA_VERSION,
+  createSyncSettings,
   type Ingredient,
   type Recipe,
   type RecipeIngredient,
   type AppState,
+  type PantryItem,
 } from "./domain";
 
 // ---------------------------------------------------------------------------
@@ -74,6 +77,36 @@ function makeRecipe(partial: Partial<Recipe> & { title: string }): Recipe {
     cookTimeMinutes: partial.cookTimeMinutes,
     isFavorite: partial.isFavorite,
     tags: partial.tags,
+  };
+}
+
+function makePantryItem(ingredientId: number, partial: Partial<PantryItem> = {}): PantryItem {
+  return {
+    ingredientId,
+    quantity: partial.quantity,
+    unit: partial.unit,
+    expiresAt: partial.expiresAt,
+    updatedAt: partial.updatedAt ?? "2024-01-01T00:00:00.000Z",
+  };
+}
+
+/** Plný `AppState` s rozumnými výchozími hodnotami — testy přepisují jen to, co zkoumají. */
+function makeState(partial: Partial<AppState> = {}): AppState {
+  return {
+    schemaVersion: partial.schemaVersion ?? SCHEMA_VERSION,
+    seedVersion: partial.seedVersion ?? SEED_VERSION,
+    recipeSeedVersion: partial.recipeSeedVersion ?? RECIPE_SEED_VERSION,
+    ingredients: partial.ingredients ?? [],
+    recipes: partial.recipes ?? [],
+    pantry: partial.pantry ?? [],
+    mealPlan: partial.mealPlan ?? [],
+    shoppingList: partial.shoppingList ?? [],
+    themeMode: partial.themeMode ?? "system",
+    recipeSortMode: partial.recipeSortMode ?? "alphabetical",
+    sync: partial.sync ?? createSyncSettings(),
+    revision: partial.revision ?? 0,
+    updatedAt: partial.updatedAt ?? "2024-01-01T00:00:00.000Z",
+    lastBackupAt: partial.lastBackupAt ?? null,
   };
 }
 
@@ -540,7 +573,7 @@ describe("parseStoredState", () => {
     const state = parseStoredState(null);
     expect(state.seedVersion).toBe(SEED_VERSION);
     expect(state.recipes).toEqual([]);
-    expect(state.pantrySelection).toEqual([]);
+    expect(state.pantry).toEqual([]);
     expect(state.themeMode).toBe("system");
     expect(state.recipeSortMode).toBe("alphabetical");
     // Seeds were applied.
@@ -667,7 +700,7 @@ describe("parseStoredState", () => {
       seedVersion: SEED_VERSION,
       ingredients: [ingredient],
       recipes: [recipe],
-      pantrySelection: [3, 1, 2],
+      pantrySelection: [500],
     });
     const state = parseStoredState(raw);
 
@@ -680,8 +713,8 @@ describe("parseStoredState", () => {
     expect(keptRecipe).toBeDefined();
     expect(keptRecipe.normalizedTitle).toBe("cockova polevka");
 
-    // pantrySelection is sorted ascending by ensureSeedData.
-    expect(state.pantrySelection).toEqual([1, 2, 3]);
+    // Legacy pantrySelection (v1) is migrated into pantry items (v2).
+    expect(state.pantry.map((item) => item.ingredientId)).toEqual([500]);
   });
 
   it("(e2) drops invalid recipe/ingredient entries", () => {
@@ -762,15 +795,7 @@ describe("parseStoredState", () => {
 
 describe("ensureSeedData", () => {
   it("adds all missing seed ingredients to an empty state", () => {
-    const state: AppState = {
-      seedVersion: 0,
-      recipeSeedVersion: RECIPE_SEED_VERSION,
-      ingredients: [],
-      recipes: [],
-      pantrySelection: [],
-      themeMode: "system",
-      recipeSortMode: "alphabetical",
-    };
+    const state = makeState({ seedVersion: 0 });
     const result = ensureSeedData(state);
     expect(result.ingredients.length).toBe(SEED_NAMES.length);
     expect(result.seedVersion).toBe(SEED_VERSION);
@@ -782,15 +807,7 @@ describe("ensureSeedData", () => {
       name: "Moje Vlastni Surovina",
       isSystem: false,
     });
-    const state: AppState = {
-      seedVersion: SEED_VERSION,
-      recipeSeedVersion: RECIPE_SEED_VERSION,
-      ingredients: [custom],
-      recipes: [],
-      pantrySelection: [],
-      themeMode: "system",
-      recipeSortMode: "alphabetical",
-    };
+    const state = makeState({ ingredients: [custom] });
     const result = ensureSeedData(state);
     // Custom + all seeds (none of the seeds collide with the custom name).
     expect(result.ingredients.length).toBe(SEED_NAMES.length + 1);
@@ -804,15 +821,7 @@ describe("ensureSeedData", () => {
       name: prettifyIngredientName(firstSeed),
       normalizedName: normalizeText(firstSeed),
     });
-    const state: AppState = {
-      seedVersion: SEED_VERSION,
-      recipeSeedVersion: RECIPE_SEED_VERSION,
-      ingredients: [existing],
-      recipes: [],
-      pantrySelection: [],
-      themeMode: "system",
-      recipeSortMode: "alphabetical",
-    };
+    const state = makeState({ ingredients: [existing] });
     const result = ensureSeedData(state);
     // One already present, so only (length - 1) added => total == length.
     expect(result.ingredients.length).toBe(SEED_NAMES.length);
@@ -823,14 +832,7 @@ describe("ensureSeedData", () => {
   });
 
   it("returns ingredients sorted by the Czech collator", () => {
-    const result = ensureSeedData({
-      seedVersion: 0,
-      ingredients: [],
-      recipes: [],
-      pantrySelection: [],
-      themeMode: "system",
-      recipeSortMode: "alphabetical",
-    });
+    const result = ensureSeedData(makeState({ seedVersion: 0 }));
     const collator = new Intl.Collator("cs", { sensitivity: "base" });
     for (let i = 1; i < result.ingredients.length; i += 1) {
       expect(
@@ -842,7 +844,7 @@ describe("ensureSeedData", () => {
     }
   });
 
-  it("sorts recipes and pantrySelection even when no seeds are missing", () => {
+  it("sorts recipes and pantry even when no seeds are missing", () => {
     // Build a state that already contains every seed so the early-return path runs.
     const seeded = createInitialState();
     const state: AppState = {
@@ -852,30 +854,27 @@ describe("ensureSeedData", () => {
         makeRecipe({ id: 1, title: "Štrúdl" }),
         makeRecipe({ id: 2, title: "Ananasový dort" }),
       ],
-      pantrySelection: [5, 2, 9, 1],
+      pantry: [5, 2, 9, 1].map((id) => makePantryItem(id)),
     };
     const result = ensureSeedData(state);
     expect(result.recipes.map((r) => r.title)).toEqual([
       "Ananasový dort",
       "Štrúdl",
     ]);
-    expect(result.pantrySelection).toEqual([1, 2, 5, 9]);
+    expect(result.pantry.map((item) => item.ingredientId)).toEqual([1, 2, 5, 9]);
   });
 
   it("does not mutate the input state object's arrays", () => {
     const ingredients: Ingredient[] = [makeIngredient({ id: 1, name: "Cibule" })];
-    const state: AppState = {
+    const state = makeState({
       seedVersion: 0,
       ingredients,
-      recipes: [],
-      pantrySelection: [3, 1],
-      themeMode: "system",
-      recipeSortMode: "alphabetical",
-    };
+      pantry: [makePantryItem(3), makePantryItem(1)],
+    });
     const before = state.ingredients.length;
     ensureSeedData(state);
     expect(state.ingredients.length).toBe(before);
-    expect(state.pantrySelection).toEqual([3, 1]); // untouched
+    expect(state.pantry.map((item) => item.ingredientId)).toEqual([3, 1]); // untouched
   });
 });
 
@@ -964,7 +963,7 @@ describe("exportStateToJson", () => {
           ],
         }),
       ],
-      pantrySelection: [1, 2, 3],
+      pantry: [makePantryItem(1)],
       themeMode: "dark",
       recipeSortMode: "mostCooked",
     };
@@ -978,7 +977,7 @@ describe("exportStateToJson", () => {
     // Top-level scalar fields survive the round-trip.
     expect(reparsed.themeMode).toBe("dark");
     expect(reparsed.recipeSortMode).toBe("mostCooked");
-    expect(reparsed.pantrySelection).toEqual([1, 2, 3]);
+    expect(reparsed.pantry.map((item) => item.ingredientId)).toEqual([1]);
 
     // The recipe survives with its meaningful fields intact.
     const recipe = reparsed.recipes.find((r) => r.id === 1)!;

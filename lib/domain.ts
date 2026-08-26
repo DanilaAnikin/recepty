@@ -1,10 +1,13 @@
 import defaultIngredients from "../assets/seeds/default_ingredients_v1.json";
 import defaultRecipes from "../assets/seeds/default_recipes_v1.json";
+import { migrateState, SCHEMA_VERSION, type UnknownState } from "./migrations";
 
 export const STORAGE_KEY = "recepty-terinky.next.v1";
 export const BACKUP_KEY = "recepty-terinky.next.v1.corrupt-backup";
 export const SEED_VERSION = 1;
 export const RECIPE_SEED_VERSION = 1;
+
+export { SCHEMA_VERSION };
 
 export type RecipeSeed = {
   title: string;
@@ -23,6 +26,9 @@ export const RECIPE_SORT_MODES = [
   { value: "mostCooked", label: "Nejvařenější" },
   { value: "recentlyUpdated", label: "Naposledy upravené" },
   { value: "favoritesFirst", label: "Oblíbené" },
+  { value: "leastMissing", label: "Nejmíň chybí" },
+  { value: "bestRated", label: "Nejlíp hodnocené" },
+  { value: "recentlyCooked", label: "Naposledy vařené" },
 ] as const;
 
 export type RecipeSortMode = (typeof RECIPE_SORT_MODES)[number]["value"];
@@ -66,6 +72,15 @@ export type RecipeIngredient = {
   unit: IngredientUnit;
 };
 
+/** Jeden záznam v historii vaření — kdy, na kolik porcí, jak dopadlo. */
+export type CookLogEntry = {
+  id: number;
+  cookedAt: string;
+  servings?: number;
+  rating?: number;
+  note?: string;
+};
+
 export type Recipe = {
   id: number;
   normalizedTitle: string;
@@ -83,16 +98,91 @@ export type Recipe = {
   tags?: string[];
   steps?: string[];
   imageUrls?: string[];
+  /** Klíče fotek uložených jako Blob v IndexedDB (novější než `imagePath`). */
+  imageKeys?: string[];
+  /** Trvalá poznámka k receptu ("příště míň soli"). */
+  notes?: string;
+  /** Hodnocení 1–5; odvozené z posledního záznamu v `cookLog`, nebo ruční. */
+  rating?: number;
+  /** Historie vaření. `cookingCount` zůstává jako rychlý souhrn. */
+  cookLog?: CookLogEntry[];
+  /** Odkud byl recept naimportován. */
+  sourceUrl?: string;
+};
+
+/** Položka domácích zásob — na rozdíl od starého `number[]` nese i množství a expiraci. */
+export type PantryItem = {
+  ingredientId: number;
+  quantity?: string;
+  unit?: IngredientUnit;
+  /** Datum spotřeby ve tvaru YYYY-MM-DD. */
+  expiresAt?: string;
+  updatedAt: string;
+};
+
+export const MEAL_SLOTS = [
+  { value: "breakfast", label: "Snídaně" },
+  { value: "lunch", label: "Oběd" },
+  { value: "dinner", label: "Večeře" },
+  { value: "snack", label: "Svačina" },
+] as const;
+
+export type MealSlot = (typeof MEAL_SLOTS)[number]["value"];
+
+/** Jeden slot v týdenním plánovači. */
+export type MealPlanEntry = {
+  id: number;
+  /** YYYY-MM-DD */
+  date: string;
+  slot: MealSlot;
+  recipeId: number | null;
+  customTitle?: string;
+  servings?: number;
+};
+
+export type ShoppingItemSource = "manual" | "recipe" | "plan";
+
+/** Položka nákupního seznamu. */
+export type ShoppingItem = {
+  id: number;
+  name: string;
+  normalizedName: string;
+  ingredientId: number | null;
+  amountText: string;
+  unit: IngredientUnit | null;
+  checked: boolean;
+  source: ShoppingItemSource;
+  /** Ze kterých receptů položka pochází — kvůli zobrazení původu. */
+  recipeTitles?: string[];
+  createdAt: string;
+};
+
+/** Nastavení volitelné synchronizace na vlastní server. */
+export type SyncSettings = {
+  enabled: boolean;
+  endpoint: string;
+  token: string;
+  lastSyncedAt: string | null;
+  lastSyncedRevision: number;
 };
 
 export type AppState = {
+  schemaVersion: number;
   seedVersion: number;
   recipeSeedVersion: number;
   ingredients: Ingredient[];
   recipes: Recipe[];
-  pantrySelection: number[];
+  pantry: PantryItem[];
+  mealPlan: MealPlanEntry[];
+  shoppingList: ShoppingItem[];
   themeMode: ThemeModeOption;
   recipeSortMode: RecipeSortMode;
+  sync: SyncSettings;
+  /** Monotónně rostoucí číslo revize — slouží k detekci konfliktů při syncu. */
+  revision: number;
+  updatedAt: string;
+  /** Kdy naposledy proběhla ruční záloha (kvůli připomínce). */
+  lastBackupAt: string | null;
 };
 
 export type RecipeMatchResult = {
@@ -166,6 +256,43 @@ export function sortRecipesBy(items: Recipe[], mode: RecipeSortMode): Recipe[] {
         }
         return collator.compare(left.normalizedTitle, right.normalizedTitle);
       });
+    case "bestRated":
+      return [...alphabetical].sort((left, right) => {
+        // Nehodnocené recepty patří až za hodnocené, ne mezi ně s nulou.
+        const leftRating = averageRating(left);
+        const rightRating = averageRating(right);
+        if (leftRating === null && rightRating === null) {
+          return collator.compare(left.normalizedTitle, right.normalizedTitle);
+        }
+        if (leftRating === null) {
+          return 1;
+        }
+        if (rightRating === null) {
+          return -1;
+        }
+        if (rightRating !== leftRating) {
+          return rightRating - leftRating;
+        }
+        return collator.compare(left.normalizedTitle, right.normalizedTitle);
+      });
+    case "recentlyCooked":
+      return [...alphabetical].sort((left, right) => {
+        const leftCooked = lastCookedAt(left);
+        const rightCooked = lastCookedAt(right);
+        if (leftCooked === null && rightCooked === null) {
+          return collator.compare(left.normalizedTitle, right.normalizedTitle);
+        }
+        if (leftCooked === null) {
+          return 1;
+        }
+        if (rightCooked === null) {
+          return -1;
+        }
+        return rightCooked.localeCompare(leftCooked);
+      });
+    // "leastMissing" potřebuje výsledky párování se spíží, které tu nejsou —
+    // řadí se až v `lib/filters.ts`, kde je k dispozici `RecipeMatchResult`.
+    case "leastMissing":
     case "alphabetical":
     default:
       return alphabetical;
@@ -251,16 +378,96 @@ export function getNextId(values: number[]): number {
   return values.reduce((max, value) => Math.max(max, value), 0) + 1;
 }
 
+export function createSyncSettings(): SyncSettings {
+  return {
+    enabled: false,
+    endpoint: "",
+    token: "",
+    lastSyncedAt: null,
+    lastSyncedRevision: 0,
+  };
+}
+
 export function createInitialState(): AppState {
   return {
+    schemaVersion: SCHEMA_VERSION,
     seedVersion: SEED_VERSION,
     recipeSeedVersion: 0,
     ingredients: seedIngredients(),
     recipes: [],
-    pantrySelection: [],
+    pantry: [],
+    mealPlan: [],
+    shoppingList: [],
     themeMode: "system",
     recipeSortMode: "alphabetical",
+    sync: createSyncSettings(),
+    revision: 0,
+    updatedAt: new Date(0).toISOString(),
+    lastBackupAt: null,
   };
+}
+
+/** Množina id ingrediencí, které jsou doma — most mezi `pantry` a `evaluateRecipe`. */
+export function pantryIdSet(pantry: PantryItem[]): Set<number> {
+  return new Set(pantry.map((item) => item.ingredientId));
+}
+
+/**
+ * Kolik dní zbývá do spotřeby. Záporné číslo = už prošlo, `null` = bez data.
+ * Počítá se na celé dny v lokálním čase, aby "dnes" bylo 0 a ne -0.5.
+ */
+export function daysUntilExpiry(expiresAt: string | undefined, now = new Date()): number | null {
+  if (!expiresAt) {
+    return null;
+  }
+  const match = expiresAt.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) {
+    return null;
+  }
+  const target = new Date(
+    Number(match[1]),
+    Number(match[2]) - 1,
+    Number(match[3]),
+  ).setHours(0, 0, 0, 0);
+  const today = new Date(now).setHours(0, 0, 0, 0);
+  return Math.round((target - today) / 86_400_000);
+}
+
+/** Zásoby, které do `withinDays` dní propadnou (nebo už propadly), od nejnaléhavější. */
+export function expiringPantryItems(
+  pantry: PantryItem[],
+  withinDays = 3,
+  now = new Date(),
+): Array<{ item: PantryItem; days: number }> {
+  return pantry
+    .map((item) => ({ item, days: daysUntilExpiry(item.expiresAt, now) }))
+    .filter((entry): entry is { item: PantryItem; days: number } => {
+      return entry.days !== null && entry.days <= withinDays;
+    })
+    .sort((left, right) => left.days - right.days);
+}
+
+/** Průměrné hodnocení z historie vaření; `recipe.rating` má přednost. */
+export function averageRating(recipe: Recipe): number | null {
+  if (typeof recipe.rating === "number" && recipe.rating > 0) {
+    return recipe.rating;
+  }
+  const rated = (recipe.cookLog ?? [])
+    .map((entry) => entry.rating)
+    .filter((value): value is number => typeof value === "number" && value > 0);
+  if (rated.length === 0) {
+    return null;
+  }
+  return rated.reduce((sum, value) => sum + value, 0) / rated.length;
+}
+
+/** ISO datum posledního uvaření, nebo `null` když recept ještě nikdy nebyl vařený. */
+export function lastCookedAt(recipe: Recipe): string | null {
+  const log = recipe.cookLog ?? [];
+  if (log.length === 0) {
+    return null;
+  }
+  return log.reduce((latest, entry) => (entry.cookedAt > latest ? entry.cookedAt : latest), log[0].cookedAt);
 }
 
 export function ensureSeedData(state: AppState): AppState {
@@ -275,7 +482,7 @@ export function ensureSeedData(state: AppState): AppState {
       ...state,
       ingredients: sortIngredients(state.ingredients),
       recipes: sortRecipes(state.recipes),
-      pantrySelection: [...state.pantrySelection].sort((left, right) => left - right),
+      pantry: sortPantry(state.pantry),
     };
   }
 
@@ -312,8 +519,12 @@ export function ensureSeedData(state: AppState): AppState {
     recipeSeedVersion: RECIPE_SEED_VERSION,
     ingredients: sortIngredients(ingredients),
     recipes: sortRecipes(recipes),
-    pantrySelection: [...state.pantrySelection].sort((left, right) => left - right),
+    pantry: sortPantry(state.pantry),
   };
+}
+
+export function sortPantry(pantry: PantryItem[]): PantryItem[] {
+  return [...pantry].sort((left, right) => left.ingredientId - right.ingredientId);
 }
 
 function applyRecipeSeed(
@@ -387,68 +598,121 @@ function applyRecipeSeed(
   return { ingredients: nextIngredients, recipes: [...recipes, ...newRecipes] };
 }
 
+/**
+ * Převede libovolně poškozený/starý objekt na platný `AppState`.
+ * Používá se jak při načtení z úložiště, tak při importu zálohy a při syncu —
+ * kterýkoli z těch vstupů může být cizí a neověřený.
+ */
+export function normalizeState(input: unknown): AppState {
+  const decoded = migrateState(
+    (input && typeof input === "object" ? input : {}) as UnknownState,
+  ) as Partial<AppState> & UnknownState;
+
+  const ingredients = Array.isArray(decoded.ingredients)
+    ? decoded.ingredients.filter(isIngredient).map((item) => ({
+        ...item,
+        normalizedName: normalizeText(item.name),
+        firstLetter: firstLetter(item.name),
+      }))
+    : [];
+
+  const knownIngredientIds = new Set(ingredients.map((item) => item.id));
+
+  const recipes = Array.isArray(decoded.recipes)
+    ? decoded.recipes.filter(isRecipe).map((recipe) => ({
+        ...recipe,
+        normalizedTitle: normalizeText(recipe.title),
+        ingredients: recipe.ingredients.filter(isRecipeIngredient),
+        isFavorite: recipe.isFavorite === true,
+        tags: Array.isArray(recipe.tags)
+          ? recipe.tags.filter((tag): tag is string => typeof tag === "string")
+          : [],
+        servings: typeof recipe.servings === "number" ? recipe.servings : undefined,
+        prepTimeMinutes:
+          typeof recipe.prepTimeMinutes === "number" ? recipe.prepTimeMinutes : undefined,
+        cookTimeMinutes:
+          typeof recipe.cookTimeMinutes === "number" ? recipe.cookTimeMinutes : undefined,
+        steps: Array.isArray(recipe.steps)
+          ? recipe.steps.filter((step): step is string => typeof step === "string")
+          : [],
+        imageUrls: Array.isArray(recipe.imageUrls)
+          ? recipe.imageUrls.filter((url): url is string => typeof url === "string")
+          : [],
+        imageKeys: Array.isArray(recipe.imageKeys)
+          ? recipe.imageKeys.filter((key): key is string => typeof key === "string")
+          : [],
+        notes: typeof recipe.notes === "string" ? recipe.notes : undefined,
+        rating: isRating(recipe.rating) ? recipe.rating : undefined,
+        sourceUrl: typeof recipe.sourceUrl === "string" ? recipe.sourceUrl : undefined,
+        cookLog: Array.isArray(recipe.cookLog) ? recipe.cookLog.filter(isCookLogEntry) : [],
+      }))
+    : [];
+
+  // Zásoby smí odkazovat jen na existující ingredience — jinak by ve spíži
+  // zůstaly neviditelné položky, které nejde odškrtnout.
+  const pantry = Array.isArray(decoded.pantry)
+    ? dedupeBy(
+        decoded.pantry.filter(isPantryItem).filter((item) => knownIngredientIds.has(item.ingredientId)),
+        (item) => item.ingredientId,
+      )
+    : [];
+
+  const knownRecipeIds = new Set(recipes.map((recipe) => recipe.id));
+  const mealPlan = Array.isArray(decoded.mealPlan)
+    ? decoded.mealPlan
+        .filter(isMealPlanEntry)
+        // Smazaný recept nesmí nechat v plánu prázdný odkaz — buď má vlastní
+        // název (ručně psané jídlo), nebo se záznam zahodí.
+        .filter((entry) => entry.recipeId === null || knownRecipeIds.has(entry.recipeId))
+    : [];
+
+  const shoppingList = Array.isArray(decoded.shoppingList)
+    ? decoded.shoppingList.filter(isShoppingItem).map((item) => ({
+        ...item,
+        normalizedName: normalizeText(item.name),
+        checked: item.checked === true,
+      }))
+    : [];
+
+  const nextState: AppState = {
+    schemaVersion: SCHEMA_VERSION,
+    seedVersion: typeof decoded.seedVersion === "number" ? decoded.seedVersion : 0,
+    recipeSeedVersion:
+      typeof decoded.recipeSeedVersion === "number" ? decoded.recipeSeedVersion : 0,
+    ingredients,
+    recipes,
+    pantry,
+    mealPlan,
+    shoppingList,
+    themeMode: isThemeModeOption(decoded.themeMode) ? decoded.themeMode : "system",
+    recipeSortMode: isRecipeSortMode(decoded.recipeSortMode)
+      ? decoded.recipeSortMode
+      : "alphabetical",
+    sync: normalizeSyncSettings(decoded.sync),
+    revision:
+      typeof decoded.revision === "number" && Number.isFinite(decoded.revision)
+        ? Math.max(0, Math.floor(decoded.revision))
+        : 0,
+    updatedAt:
+      typeof decoded.updatedAt === "string" ? decoded.updatedAt : new Date(0).toISOString(),
+    lastBackupAt: typeof decoded.lastBackupAt === "string" ? decoded.lastBackupAt : null,
+  };
+
+  return ensureSeedData(nextState);
+}
+
 export function parseStoredState(raw: string | null): AppState {
   if (!raw) {
     return createInitialState();
   }
 
   try {
-    const decoded = JSON.parse(raw) as Partial<AppState> | null;
-    if (!decoded) {
+    const decoded = JSON.parse(raw) as unknown;
+    if (!decoded || typeof decoded !== "object") {
       return createInitialState();
     }
 
-    const ingredients = Array.isArray(decoded.ingredients)
-      ? decoded.ingredients
-          .filter(isIngredient)
-          .map((item) => ({
-            ...item,
-            normalizedName: normalizeText(item.name),
-            firstLetter: firstLetter(item.name),
-          }))
-      : [];
-
-    const recipes = Array.isArray(decoded.recipes)
-      ? decoded.recipes.filter(isRecipe).map((recipe) => ({
-          ...recipe,
-          normalizedTitle: normalizeText(recipe.title),
-          ingredients: recipe.ingredients.filter(isRecipeIngredient),
-          isFavorite: recipe.isFavorite === true,
-          tags: Array.isArray(recipe.tags)
-            ? recipe.tags.filter((tag): tag is string => typeof tag === "string")
-            : [],
-          servings: typeof recipe.servings === "number" ? recipe.servings : undefined,
-          prepTimeMinutes:
-            typeof recipe.prepTimeMinutes === "number" ? recipe.prepTimeMinutes : undefined,
-          cookTimeMinutes:
-            typeof recipe.cookTimeMinutes === "number" ? recipe.cookTimeMinutes : undefined,
-          steps: Array.isArray(recipe.steps)
-            ? recipe.steps.filter((step): step is string => typeof step === "string")
-            : [],
-          imageUrls: Array.isArray(recipe.imageUrls)
-            ? recipe.imageUrls.filter((url): url is string => typeof url === "string")
-            : [],
-        }))
-      : [];
-
-    const pantrySelection = Array.isArray(decoded.pantrySelection)
-      ? decoded.pantrySelection.filter((item): item is number => typeof item === "number")
-      : [];
-
-    const nextState: AppState = {
-      seedVersion: typeof decoded.seedVersion === "number" ? decoded.seedVersion : 0,
-      recipeSeedVersion:
-        typeof decoded.recipeSeedVersion === "number" ? decoded.recipeSeedVersion : 0,
-      ingredients,
-      recipes,
-      pantrySelection,
-      themeMode: isThemeModeOption(decoded.themeMode) ? decoded.themeMode : "system",
-      recipeSortMode: isRecipeSortMode(decoded.recipeSortMode)
-        ? decoded.recipeSortMode
-        : "alphabetical",
-    };
-
-    return ensureSeedData(nextState);
+    return normalizeState(decoded);
   } catch (error) {
     console.error("Recepty Terinky: poškozená data v localStorage", error);
     if (raw && typeof window !== "undefined") {
@@ -596,4 +860,94 @@ function isRecipe(value: unknown): value is Recipe {
     typeof item.updatedAt === "string" &&
     Array.isArray(item.ingredients)
   );
+}
+
+function isRating(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value >= 1 && value <= 5;
+}
+
+function isIngredientUnit(value: unknown): value is IngredientUnit {
+  return INGREDIENT_UNITS.some((unit) => unit.value === value);
+}
+
+function isCookLogEntry(value: unknown): value is CookLogEntry {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const item = value as Partial<CookLogEntry>;
+  return typeof item.id === "number" && typeof item.cookedAt === "string";
+}
+
+function isPantryItem(value: unknown): value is PantryItem {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const item = value as Partial<PantryItem>;
+  return (
+    typeof item.ingredientId === "number" &&
+    (item.unit === undefined || isIngredientUnit(item.unit)) &&
+    (item.quantity === undefined || typeof item.quantity === "string") &&
+    (item.expiresAt === undefined || typeof item.expiresAt === "string")
+  );
+}
+
+function isMealPlanEntry(value: unknown): value is MealPlanEntry {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const item = value as Partial<MealPlanEntry>;
+  return (
+    typeof item.id === "number" &&
+    typeof item.date === "string" &&
+    /^\d{4}-\d{2}-\d{2}$/.test(item.date) &&
+    MEAL_SLOTS.some((slot) => slot.value === item.slot) &&
+    (item.recipeId === null || typeof item.recipeId === "number")
+  );
+}
+
+function isShoppingItem(value: unknown): value is ShoppingItem {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const item = value as Partial<ShoppingItem>;
+  return (
+    typeof item.id === "number" &&
+    typeof item.name === "string" &&
+    typeof item.amountText === "string" &&
+    (item.unit === null || isIngredientUnit(item.unit)) &&
+    (item.ingredientId === null || typeof item.ingredientId === "number")
+  );
+}
+
+function normalizeSyncSettings(value: unknown): SyncSettings {
+  const fallback = createSyncSettings();
+  if (!value || typeof value !== "object") {
+    return fallback;
+  }
+  const item = value as Partial<SyncSettings>;
+  return {
+    enabled: item.enabled === true,
+    endpoint: typeof item.endpoint === "string" ? item.endpoint : fallback.endpoint,
+    token: typeof item.token === "string" ? item.token : fallback.token,
+    lastSyncedAt: typeof item.lastSyncedAt === "string" ? item.lastSyncedAt : null,
+    lastSyncedRevision:
+      typeof item.lastSyncedRevision === "number" && Number.isFinite(item.lastSyncedRevision)
+        ? Math.max(0, Math.floor(item.lastSyncedRevision))
+        : 0,
+  };
+}
+
+/** Ponechá první výskyt každého klíče — pořadí vstupu se zachovává. */
+function dedupeBy<T, K>(items: T[], key: (item: T) => K): T[] {
+  const seen = new Set<K>();
+  const result: T[] = [];
+  for (const item of items) {
+    const itemKey = key(item);
+    if (seen.has(itemKey)) {
+      continue;
+    }
+    seen.add(itemKey);
+    result.push(item);
+  }
+  return result;
 }
