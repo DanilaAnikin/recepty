@@ -1,25 +1,53 @@
 {
   "name": "Recepty Terinky",
   "short_name": "Recepty",
-  "description": "Domácí kuchařka na recepty, ingredience a zásoby.",
+  "description": "Domácí kuchařka na recepty, ingredience, zásoby, nákup a týdenní plán.",
   "lang": "cs",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#fff6f2",
   "theme_color": "#c65670",
+  "categories": ["food", "lifestyle", "productivity"],
   "icons": [
     {
-      "src": "/icon.png",
-      "sizes": "1024x1024",
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon.png",
-      "sizes": "1024x1024",
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192.png",
+      "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nákupní seznam",
+      "short_name": "Nákup",
+      "url": "/?tab=nakup",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Plán na týden",
+      "short_name": "Plán",
+      "url": "/?tab=plan",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }

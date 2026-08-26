@@ -112,17 +112,19 @@ function slotOrder(slot: MealSlot): number {
  * `buildShoppingItems`. Stejný recept naplánovaný dvakrát se objeví dvakrát,
  * takže se množství správně sečte.
  */
+export type PlannedRecipe = { recipe: Recipe; servings?: number };
+
 export function plannedRecipesInRange(
   mealPlan: MealPlanEntry[],
   recipes: Recipe[],
   fromDateKeyInclusive: string,
   toDateKeyInclusive: string,
-): Array<{ recipe: Recipe; servings?: number }> {
+): PlannedRecipe[] {
   const byId = new Map(recipes.map((recipe) => [recipe.id, recipe]));
 
   return mealPlan
     .filter((entry) => entry.date >= fromDateKeyInclusive && entry.date <= toDateKeyInclusive)
-    .map((entry) => {
+    .map((entry): PlannedRecipe | null => {
       if (entry.recipeId === null) {
         return null;
       }
@@ -132,7 +134,7 @@ export function plannedRecipesInRange(
       }
       return { recipe, servings: entry.servings };
     })
-    .filter((item): item is { recipe: Recipe; servings?: number } => item !== null);
+    .filter((item): item is PlannedRecipe => item !== null);
 }
 
 /** Kolik jídel je v týdnu naplánovaných — pro souhrn v hlavičce. */
