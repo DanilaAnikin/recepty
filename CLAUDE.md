@@ -88,6 +88,25 @@ zůstává pod tagem `flutter-legacy-archive`.
 - **`.hero-card` má `z-index: 3`**: `backdrop-filter` na hero i na panelech
   zakládá vlastní stacking context, takže bez toho panel s filtry překryl
   rozbalenou nabídku motivu.
+- **`.hero-actions` má `flex-wrap: nowrap`.** Když se zalamovaly, tlačítko
+  motivu skončilo na začátku nového řádku a jeho nabídka (kotvená `right: 0`)
+  se roztáhla doleva mimo obrazovku. Hlídá to e2e test na 320–412 px.
+- **Rozměry v `next/image` musí sedět se souborem.** U loga bylo `455×110`,
+  ale soubor je `669×373`; `height: auto` pak počítalo výšku z jiného poměru
+  a logo bylo dvakrát vyšší, než mělo být.
+- **Modály jsou na mobilu spodní sheety** (`max-width: 700px`): `align-items: end`,
+  zaoblený jen horní okraj, patička s `env(safe-area-inset-bottom)`.
+- **Plánovač na mobilu ukazuje jeden den** a nad ním pruh dnů (`.day-strip`);
+  na širším displeji zůstává celý týden vedle sebe. Řídí to `useMediaQuery`,
+  ne CSS — mění se struktura, ne jen vzhled.
+- **`.form-card` je `display: grid` s `gap`.** Bez toho na sobě pole ve
+  formulářích seděla bez mezery, protože `.field-stack` řeší jen odsazení
+  mezi popiskem a vstupem.
+- **`.detail-title` je skrytý přes `@media screen`, ne úplně.** Název je
+  na obrazovce už v hlavičce modalu, ale hlavička se netiskne — bez toho by
+  vytištěný recept neměl nadpis.
+- **Dotykové cíle mají do 820 px minimálně 44 px** a pole `font-size: 16px`
+  (pod 16 px iOS při zaostření sám přiblíží stránku).
 - **Flexové položky v plánovači potřebují `min-width: 0`**, jinak dlouhý název
   receptu roztáhne celý sloupec a vytlačí datum z hlavičky dne.
 - **`ensureSeedData` se volá při každém commitu**: wrapper v reduceru vždycky

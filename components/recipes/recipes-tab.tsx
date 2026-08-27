@@ -34,6 +34,7 @@ import {
 import * as mutations from "@/lib/mutations";
 import { buildSearchIndex } from "@/lib/search";
 import { useAppState } from "@/components/app/app-state";
+import { useMediaQuery } from "@/components/app/use-media-query";
 import { useToast } from "@/components/app/toast";
 import { EmptyState, RecipeImage, StarRating } from "@/components/ui/primitives";
 
@@ -67,6 +68,8 @@ export function RecipesTab({
     matchMode: "full",
   }));
   const [filtersExpanded, setFiltersExpanded] = useState(false);
+  // Dlouhý popisek se do pole na telefonu nevejde a usekne se uprostřed slova.
+  const isNarrow = useMediaQuery("(max-width: 560px)");
 
   const pantryIds = useMemo(() => pantryIdSet(state.pantry), [state.pantry]);
 
@@ -137,7 +140,9 @@ export function RecipesTab({
           <input
             value={filters.query}
             onChange={(event) => updateFilters({ query: event.target.value })}
-            placeholder="Hledat v názvech, ingrediencích i postupu"
+            placeholder={
+              isNarrow ? "Hledat recept" : "Hledat v názvech, ingrediencích i postupu"
+            }
             aria-label="Vyhledat recept"
             type="search"
           />
@@ -164,20 +169,6 @@ export function RecipesTab({
             Filtry
             {activeFilterCount > 0 ? <span className="filter-badge">{activeFilterCount}</span> : null}
           </button>
-
-          <div className="segmented-control" role="group" aria-label="Režim párování se zásobami">
-            {RECIPE_MATCH_MODES.map((mode) => (
-              <button
-                key={mode.value}
-                type="button"
-                className={filters.matchMode === mode.value ? "segment-button active" : "segment-button"}
-                onClick={() => updateFilters({ matchMode: mode.value })}
-                aria-pressed={filters.matchMode === mode.value}
-              >
-                {mode.label}
-              </button>
-            ))}
-          </div>
 
           <label className="recipe-sort-select">
             <span className="recipe-sort-label">Řadit</span>
@@ -216,9 +207,14 @@ export function RecipesTab({
 
           {/* Import je i tady, ne jen v hlavičce sekce — ta se na mobilu skrývá
               a bez tohohle by na telefonu nešel recept naimportovat vůbec. */}
-          <button type="button" className="secondary-button mobile-only-action" onClick={onImportRecipe}>
+          <button
+            type="button"
+            className="secondary-button mobile-only-action import-action"
+            onClick={onImportRecipe}
+            aria-label="Importovat recept"
+          >
             <Link2 size={16} aria-hidden="true" />
-            Importovat
+            <span className="import-action-label">Importovat</span>
           </button>
         </div>
 
@@ -247,7 +243,24 @@ export function RecipesTab({
             </div>
 
             <div className="filter-group">
-              <span className="filter-group-label">Co mi chybí ze zásob</span>
+              <span className="filter-group-label">Podle zásob</span>
+
+              <div className="segmented-control" role="group" aria-label="Režim párování se zásobami">
+                {RECIPE_MATCH_MODES.map((mode) => (
+                  <button
+                    key={mode.value}
+                    type="button"
+                    className={
+                      filters.matchMode === mode.value ? "segment-button active" : "segment-button"
+                    }
+                    onClick={() => updateFilters({ matchMode: mode.value })}
+                    aria-pressed={filters.matchMode === mode.value}
+                  >
+                    {mode.label}
+                  </button>
+                ))}
+              </div>
+
               <div className="pill-row">
                 {MISSING_PRESETS.map((preset) => (
                   <button

@@ -65,6 +65,11 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  // Aplikace kreslí až pod výřez a domovský indikátor; odsazení si řeší sama
+  // přes `env(safe-area-inset-*)`. Bez `cover` by po stranách zůstaly pruhy.
+  viewportFit: "cover",
+  // Zvětšení textu se schválně neomezuje — `maximumScale` by lidem se slabším
+  // zrakem znemožnilo přiblížit si recept u sporáku.
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#fff6f2" },
     { media: "(prefers-color-scheme: dark)", color: "#171315" },

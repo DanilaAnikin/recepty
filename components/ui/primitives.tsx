@@ -91,6 +91,9 @@ export function RecipeImage({
   // na jiný recept na okamžik problikla fotka toho předchozího — a resetovat to
   // v efektu by znamenalo render navíc.
   const [resolved, setResolved] = useState<{ key: string; url: string | null } | null>(null);
+  // Odkaz, který se nepodařilo načíst (smazaná fotka na cizím webu, offline).
+  // Bez tohohle by po nezdaru zůstal jen prázdný rámeček.
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const isBlobKey = typeof source === "string" && source.startsWith("img_");
 
   useEffect(() => {
@@ -110,11 +113,12 @@ export function RecipeImage({
     };
   }, [source, isBlobKey]);
 
-  const displayUrl = isBlobKey
+  const candidateUrl = isBlobKey
     ? resolved && resolved.key === source
       ? resolved.url
       : null
     : (source ?? null);
+  const displayUrl = candidateUrl && candidateUrl === failedUrl ? null : candidateUrl;
   const className = large ? "recipe-image large" : "recipe-image";
 
   if (!displayUrl) {
@@ -131,9 +135,10 @@ export function RecipeImage({
         src={displayUrl}
         alt={alt}
         fill
-        sizes={large ? "156px" : "96px"}
+        sizes={large ? "(max-width: 700px) 100vw, 156px" : "96px"}
         unoptimized
         // Object URL i data URL jsou lokální; `next/image` je nemá optimalizovat.
+        onError={() => setFailedUrl(displayUrl)}
       />
     </div>
   );
@@ -208,7 +213,12 @@ export function VirtualList<T>({
 }: {
   items: T[];
   rowHeight: number | ((item: T, index: number) => number);
-  maxHeight: number;
+  /**
+   * Výška okna seznamu. Číslo = pixely, řetězec = libovolná CSS hodnota
+   * (`min(70dvh, 640px)`), aby se dala svázat s výškou obrazovky. Skutečná
+   * výška se stejně měří přes ResizeObserver, tohle je jen strop.
+   */
+  maxHeight: number | string;
   overscan?: number;
   renderRow: (item: T, index: number) => ReactNode;
   emptyState?: ReactNode;
@@ -216,7 +226,9 @@ export function VirtualList<T>({
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollTop, setScrollTop] = useState(0);
-  const [viewportHeight, setViewportHeight] = useState(maxHeight);
+  // Než ResizeObserver změří skutečnou výšku, počítá se s rozumným odhadem.
+  const fallbackHeight = typeof maxHeight === "number" ? maxHeight : 480;
+  const [viewportHeight, setViewportHeight] = useState(fallbackHeight);
 
   useEffect(() => {
     const node = containerRef.current;
@@ -226,11 +238,11 @@ export function VirtualList<T>({
     // ResizeObserver se ozve hned při `observe`, takže počáteční rozměr
     // změříme z jeho callbacku a nemusíme sahat na stav přímo v efektu.
     const observer = new ResizeObserver(() => {
-      setViewportHeight(node.clientHeight || maxHeight);
+      setViewportHeight(node.clientHeight || fallbackHeight);
     });
     observer.observe(node);
     return () => observer.disconnect();
-  }, [maxHeight]);
+  }, [fallbackHeight]);
 
   /** Kumulativní posuny řádků; `offsets[i]` je horní hrana i-tého řádku. */
   const { offsets, totalHeight } = useMemo(() => {

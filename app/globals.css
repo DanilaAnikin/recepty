@@ -82,6 +82,7 @@ img {
 .app-shell {
   position: relative;
   min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
 }
 
@@ -152,7 +153,6 @@ img {
 }
 
 .hero-topline,
-.hero-actions,
 .hero-bottom,
 .section-intro {
   display: flex;
@@ -160,6 +160,17 @@ img {
   justify-content: space-between;
   gap: 18px;
   flex-wrap: wrap;
+}
+
+/* Akce v hlavicce se schvalne nezalamuji. Kdyz se zalomily, tlacitko motivu
+   skoncilo na zacatku noveho radku a jeho nabidka (kotvena `right: 0`) se
+   roztahla doleva mimo obrazovku. */
+.hero-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: nowrap;
 }
 
 .hero-branding,
@@ -269,6 +280,14 @@ img {
 .form-card {
   padding: 22px;
   border-radius: 28px;
+}
+
+/* Bez tohohle na sobě pole ve formuláři sedí bez mezery — `.field-stack`
+   řeší jen odsazení mezi popiskem a vstupem, ne mezi poli navzájem. */
+.form-card {
+  display: grid;
+  gap: 15px;
+  align-content: start;
 }
 
 .toolbar-panel {
@@ -629,6 +648,8 @@ img {
   display: grid;
   gap: 6px;
   min-width: 210px;
+  /* Pojistka pro uzke displeje: nabidka se roztahuje doleva od tlacitka. */
+  max-width: calc(100vw - 24px);
   padding: 8px;
   border-radius: 20px;
   background: var(--surface-strong);
@@ -2426,4 +2447,768 @@ img {
    posunů ve virtualizaci (ITEM_ROW_HEIGHT). */
 .ingredient-list-card .ingredient-row {
   height: 58px;
+}
+
+/* ==========================================================================
+   MOBILNÍ PRŮCHOD
+   Vše níž platí jen pro telefony. Desktop zůstává, jak byl.
+   ========================================================================== */
+
+/* --- Základ ------------------------------------------------------------- */
+
+:root {
+  /* Bezpečná zóna kolem výřezu a domovského indikátoru. */
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  /* Výška spodní navigace i s odsazením — obsah nad ni nesmí zalézt. */
+  --bottom-nav-space: calc(78px + var(--safe-bottom));
+}
+
+@media (max-width: 820px) {
+  /* Šedý blik při klepnutí nahrazuje vlastní stav :active. */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button,
+  a,
+  label,
+  input[type="checkbox"] {
+    touch-action: manipulation;
+  }
+
+  /* Zpětná vazba na dotyk — na mobilu není hover, takže bez tohohle
+     člověk neví, jestli se klepnutí povedlo. */
+  .primary-button:active,
+  .secondary-button:active,
+  .ghost-button:active,
+  .tab-button:active,
+  .segment-button:active,
+  .pill-button:active,
+  .icon-button:active,
+  .picker-row:active,
+  .recipe-card-main:active,
+  .bottom-nav-button:active,
+  .ingredient-pick-button:active {
+    transform: scale(0.97);
+  }
+
+  /* Hover efekty na dotykovém displeji jen matou (zůstanou "zaseknuté"). */
+  .primary-button:hover,
+  .secondary-button:hover,
+  .ghost-button:hover,
+  .tab-button:hover,
+  .segment-button:hover,
+  .pill-button:hover,
+  .icon-button:hover,
+  .ingredient-pick-button:hover,
+  .picker-row:hover,
+  .recipe-card:hover {
+    transform: none;
+  }
+
+  .app-frame {
+    padding-left: var(--safe-left);
+    padding-right: var(--safe-right);
+    padding-bottom: calc(24px + var(--bottom-nav-space));
+  }
+}
+
+/* --- Dotykové cíle ------------------------------------------------------ */
+
+@media (max-width: 820px) {
+  /* Doporučená minimální velikost dotykového cíle je 44 px. */
+  .icon-button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .icon-button svg {
+    width: 19px;
+    height: 19px;
+  }
+
+  .primary-button,
+  .secondary-button,
+  .ghost-button,
+  .file-button {
+    min-height: 48px;
+  }
+
+  .pill-button,
+  .segment-button,
+  .tab-button {
+    min-height: 44px;
+    padding: 0 16px;
+  }
+
+  .recipe-sort-select {
+    min-height: 48px;
+    padding: 0 14px;
+  }
+
+  .recipe-sort-select select {
+    min-height: 44px;
+  }
+
+  .field-stack input,
+  .field-stack select,
+  .field-stack textarea,
+  .search-row {
+    min-height: 50px;
+    /* Pod 16 px iOS při zaostření pole automaticky přiblíží stránku. */
+    font-size: 16px;
+  }
+
+  /* Zaškrtávátka se na dotyk trefují nejhůř ze všeho. */
+  .ingredient-home-toggle input,
+  .ingredient-check input,
+  .shopping-row input,
+  .checkbox-row input {
+    width: 26px;
+    height: 26px;
+  }
+
+  .ingredient-home-toggle {
+    /* Zvětšený dotykový cíl kolem malého vizuálního zaškrtávátka. */
+    padding: 9px;
+    margin: -9px;
+  }
+}
+
+/* --- Hlavička ----------------------------------------------------------- */
+
+@media (max-width: 560px) {
+  .hero-card {
+    padding: 14px 16px;
+  }
+
+  .hero-topline {
+    gap: 10px;
+    flex-wrap: nowrap;
+  }
+
+  .hero-branding {
+    min-width: 0;
+    flex-shrink: 1;
+  }
+
+  /* Logo se řídí výškou — ta určuje výšku celého řádku hlavičky.
+     Šířka dopadne podle poměru stran souboru (669×373). */
+  .hero-logo {
+    height: 52px;
+    width: auto;
+    max-width: 46vw;
+    object-fit: contain;
+    object-position: left center;
+  }
+
+  /* Na mobilu je `.hero-copy` prázdný (nadpis i odstavec jsou skryté), ale
+     jako položka gridu by pořád vyráběl mezeru nad i pod sebou. */
+  .hero-copy {
+    display: none;
+  }
+
+  .hero-actions {
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .hero-actions .icon-button {
+    width: 42px;
+    height: 42px;
+  }
+
+  .theme-menu-panel {
+    min-width: min(230px, calc(100vw - 24px));
+  }
+}
+
+/* Na opravdu úzkých displejích (320 px) se ještě o kousek přitáhne. */
+@media (max-width: 360px) {
+  .hero-actions {
+    gap: 2px;
+  }
+
+  .hero-actions .icon-button {
+    width: 38px;
+    height: 38px;
+  }
+
+  .hero-logo {
+    height: 44px;
+    max-width: 40vw;
+  }
+}
+
+/* --- Spodní navigace ---------------------------------------------------- */
+
+@media (max-width: 560px) {
+  .bottom-nav {
+    bottom: calc(10px + var(--safe-bottom));
+    width: calc(100% - 16px);
+  }
+
+  .fab {
+    bottom: calc(var(--bottom-nav-space) + 12px);
+  }
+}
+
+/* --- Modály jako spodní sheety ------------------------------------------ */
+
+@media (max-width: 700px) {
+  /* Na telefonu je vycentrované okno s okraji ztráta místa. Sheet vytažený
+     odspodu je zvyklost ze systémových aplikací a dá se palcem dosáhnout. */
+  .modal-overlay {
+    padding: 0;
+    align-items: end;
+  }
+
+  .modal-window,
+  .modal-window.wide,
+  .modal-window.full {
+    width: 100%;
+    max-width: 100%;
+    max-height: 94dvh;
+    border-radius: 26px 26px 0 0;
+  }
+
+  .modal-header {
+    padding: 16px 18px;
+  }
+
+  .modal-header h2 {
+    font-size: 1.25rem;
+    /* Dlouhý název receptu nesmí odtlačit křížek mimo obrazovku. */
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .modal-body {
+    padding: 18px;
+    /* Setrvačné rolování uvnitř sheetu, ne pod ním. */
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .modal-footer {
+    gap: 8px;
+    padding: 14px 18px calc(14px + var(--safe-bottom));
+  }
+
+  /* Tlačítka v patičce sheetu: dvě na řádek, hlavní akce přes celou šířku. */
+  .modal-footer > button {
+    flex: 1 1 calc(50% - 4px);
+    min-width: 0;
+  }
+
+  .modal-footer > .primary-button:last-child {
+    flex-basis: 100%;
+  }
+}
+
+/* --- Detail receptu ----------------------------------------------------- */
+
+/* Název receptu je na obrazovce už v hlavičce modalu — opakovat ho hned pod ní
+   je zbytečné. Pro tisk ale zůstává, protože hlavička se netiskne a jinak by
+   vytištěný recept neměl nadpis. */
+@media screen {
+  .modal-window .detail-title {
+    display: none;
+  }
+}
+
+@media (max-width: 700px) {
+  .detail-hero {
+    flex-direction: column-reverse;
+    gap: 14px;
+  }
+
+  /* Fotka receptu přes celou šířku působí líp než čtvereček v rohu. */
+  .detail-hero .recipe-image.large {
+    width: 100%;
+    height: 190px;
+    border-radius: 22px;
+  }
+
+  .meta-row {
+    gap: 8px;
+  }
+
+  .meta-chip {
+    padding: 8px 12px;
+    font-size: 0.86rem;
+  }
+
+  /* Akce receptu do mřížky 3×2 místo šesti zalomených řádků. */
+  .detail-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .detail-actions .secondary-button {
+    flex-direction: column;
+    gap: 4px;
+    min-height: 66px;
+    padding: 8px 4px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+  }
+}
+
+/* --- Karta receptu ------------------------------------------------------ */
+
+@media (max-width: 560px) {
+  .recipe-card {
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .recipe-card-main {
+    gap: 13px;
+  }
+
+  .recipe-image {
+    width: 84px;
+    height: 84px;
+    border-radius: 20px;
+  }
+
+  .recipe-card-copy {
+    gap: 7px;
+  }
+
+  .recipe-card-copy h3 {
+    font-size: 1.16rem;
+    line-height: 1.25;
+  }
+
+  /* Akce karty jako kompaktní řádek vpravo dole, ne roztažený blok. */
+  .card-actions {
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 2px;
+    border-top: 1px solid var(--surface-border);
+  }
+}
+
+/* --- Panel filtrů ------------------------------------------------------- */
+
+@media (max-width: 560px) {
+  .toolbar-panel {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .filter-drawer {
+    padding: 14px;
+    gap: 14px;
+  }
+
+  .filter-group {
+    gap: 8px;
+  }
+
+  .pill-row {
+    gap: 8px;
+  }
+}
+
+/* --- Nákupní seznam ----------------------------------------------------- */
+
+@media (max-width: 560px) {
+  .shopping-row {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .shopping-name {
+    font-size: 1rem;
+  }
+}
+
+/* --- Seznam ingrediencí ------------------------------------------------- */
+
+@media (max-width: 560px) {
+  .ingredient-list-card {
+    padding: 12px;
+  }
+
+  .ingredient-row {
+    gap: 6px;
+    padding: 8px 10px;
+  }
+
+  /* Ikony akcí u ingredience: menší, ale pořád nad hranicí dotykového cíle
+     díky odsazení řádku. */
+  .ingredient-row .icon-button {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+  }
+
+  .ingredient-name {
+    font-size: 0.98rem;
+  }
+}
+
+/* --- Režim vaření ------------------------------------------------------- */
+
+@media (max-width: 820px) {
+  .cook-mode {
+    /* `100dvh` počítá s lištou prohlížeče, která se při rolování schovává. */
+    height: 100dvh;
+  }
+
+  .cook-mode-header {
+    padding-top: calc(14px + var(--safe-top));
+  }
+
+  .cook-mode-footer {
+    padding-bottom: calc(14px + var(--safe-bottom));
+  }
+
+  .cook-mode-ingredients {
+    padding: 16px;
+  }
+}
+
+/* --- Formuláře ---------------------------------------------------------- */
+
+@media (max-width: 560px) {
+  .inline-fields {
+    gap: 10px;
+  }
+
+  .inline-fields.recipe-meta-fields .field-stack {
+    flex: 1 1 calc(50% - 5px);
+  }
+
+  .ingredient-form-row {
+    padding: 12px;
+  }
+
+  .image-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .backup-actions .primary-button,
+  .backup-actions .secondary-button {
+    flex-basis: 100%;
+  }
+
+  .conflict-choice {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* --- Toast -------------------------------------------------------------- */
+
+@media (max-width: 560px) {
+  .toast {
+    width: calc(100% - 24px);
+    bottom: calc(var(--bottom-nav-space) + 10px);
+  }
+}
+
+/* --- Plánovač na mobilu ------------------------------------------------- */
+
+/* Pruh s dny týdne. Ukazuje se jen na úzkých displejích, kde se sedm karet
+   pod sebou čte mizerně. */
+.day-strip {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+  padding: 8px;
+  border-radius: 22px;
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  box-shadow: var(--shadow);
+}
+
+.day-strip-button {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 2px;
+  min-height: 58px;
+  padding: 6px 2px;
+  border-radius: 16px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.day-strip-name {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.day-strip-date {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.day-strip-button.today {
+  border-color: var(--primary);
+}
+
+.day-strip-button.active {
+  background: var(--primary);
+  color: var(--primary-contrast);
+  border-color: transparent;
+}
+
+.day-strip-button.active .day-strip-date {
+  color: var(--primary-contrast);
+}
+
+/* Tečka značí, že na ten den už něco naplánovaného je. */
+.day-strip-dot {
+  position: absolute;
+  bottom: 6px;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--primary);
+}
+
+.day-strip-button.active .day-strip-dot {
+  background: var(--primary-contrast);
+}
+
+.day-strip-button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+@media (max-width: 820px) {
+  /* Jeden den přes celou šířku. */
+  .planner-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .planner-day {
+    padding: 16px;
+  }
+
+  .planner-day-header strong {
+    font-size: 1.15rem;
+  }
+
+  /* Prázdný slot má být jeden klepnutelný řádek, ne velká prázdná krabice. */
+  .planner-slot {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px;
+    min-height: 54px;
+  }
+
+  .planner-slot-label {
+    grid-column: 1;
+  }
+
+  .planner-add {
+    grid-column: 2;
+    grid-row: 1;
+    width: 40px;
+    height: 40px;
+    border-radius: 14px;
+  }
+
+  /* Naplánované jídlo se roztáhne přes obě sloupce pod popisek slotu. */
+  .planner-entry {
+    grid-column: 1 / -1;
+    margin-bottom: 6px;
+  }
+
+  .planner-entry-title {
+    padding: 11px 12px;
+    font-size: 0.96rem;
+  }
+
+  .planner-entry .icon-button {
+    width: 38px;
+    height: 38px;
+  }
+
+  /* Přetahování na dotykovém displeji nefunguje — panel by jen mátl. */
+  .planner-drag-source,
+  .planner-drag-source-card {
+    display: none;
+  }
+
+  .week-nav-label strong {
+    font-size: 1.05rem;
+  }
+}
+
+/* --- Hodnocení hvězdičkami na dotyk ------------------------------------- */
+
+@media (max-width: 820px) {
+  /* Hvězdičky jsou jediný ovládací prvek, kde je vizuál menší než prst.
+     Rozšíří se dotyková plocha, samotná ikona zůstává drobná. */
+  .star-rating.interactive {
+    gap: 0;
+  }
+
+  .star-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+  }
+
+  .star-button svg {
+    width: 26px;
+    height: 26px;
+  }
+}
+
+@media (max-width: 700px) {
+  /* Tlačítko, které na mobilu duplikuje křížek v hlavičce sheetu. */
+  .modal-footer > .redundant-close {
+    display: none;
+  }
+}
+
+/* --- Kompaktní lišta receptů na mobilu ---------------------------------- */
+
+@media (max-width: 560px) {
+  /* Import se vejde jen jako ikona; popisek nese aria-label. */
+  .import-action {
+    width: 48px;
+    padding: 0;
+  }
+
+  .import-action-label {
+    display: none;
+  }
+
+  /* Kratší popisek řazení, ať se vejdou čtyři ovládací prvky do řádku. */
+  .recipe-sort-label {
+    display: none;
+  }
+
+  .recipe-sort-select {
+    padding: 0 6px 0 12px;
+  }
+}
+
+/* --- Vodorovný pruh vedlejších akcí ------------------------------------- */
+
+@media (max-width: 560px) {
+  /* Sekundární akce v jednom rolovatelném řádku místo tří zalomených.
+     Používá se tam, kde je hlavním obsahem seznam pod lištou. */
+  .toolbar-wrap.action-scroller {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    /* Odsazení na koncích, ať poslední chip nekončí přesně na hraně. */
+    padding-bottom: 2px;
+    scroll-padding-inline: 14px;
+    /* Náznak, že se dá rolovat dál. */
+    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  }
+
+  .toolbar-wrap.action-scroller::-webkit-scrollbar {
+    display: none;
+  }
+
+  .toolbar-wrap.action-scroller > * {
+    flex: 0 0 auto;
+  }
+}
+
+/* --- Řádek nákupního seznamu jako jeden celek --------------------------- */
+
+@media (max-width: 560px) {
+  /* Koš patří do stejné karty jako zbytek řádku; jinak se vizuálně odtrhne
+     a vypadá, že maže něco jiného. */
+  .shopping-list li {
+    gap: 0;
+    border-radius: 18px;
+    border: 1px solid var(--surface-border);
+    background: var(--surface-strong);
+    overflow: hidden;
+  }
+
+  .shopping-list li > .shopping-row {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .shopping-list li > .icon-button {
+    flex-shrink: 0;
+    align-self: stretch;
+    height: auto;
+    width: 52px;
+    border: none;
+    border-left: 1px solid var(--surface-border);
+    border-radius: 0;
+    background: transparent;
+  }
+}
+
+/* --- Formuláře na mobilu ------------------------------------------------ */
+
+@media (max-width: 560px) {
+  /* Výchozích 132 px je na telefonu skoro třetina obrazovky pro nepovinné
+     pole. Textarea se stejně dá roztáhnout tažením. */
+  .field-stack textarea {
+    min-height: 96px;
+  }
+
+  .form-card {
+    padding: 16px;
+    gap: 14px;
+  }
+}
+
+/* Lišta v panelu se zarovnává doleva jako souvislá skupina. `space-between`
+   ze sdíleného pravidla ji po zeštíhlení roztrhalo přes celou šířku. */
+.toolbar-panel .toolbar-wrap {
+  justify-content: flex-start;
+}
+
+/* --- Detail receptu: deterministické rozvržení hlavičky ------------------ */
+
+@media (min-width: 701px) {
+  /* Flexové zalamování posílalo fotku pod text, jakmile řádek s akcemi
+     povyrostl. Mřížka drží dva sloupce bez ohledu na obsah. */
+  .modal-window .detail-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 156px;
+    align-items: start;
+    gap: 20px;
+  }
+}
+
+/* Fotka má vyplnit dlaždici galerie, ne v ní sedět jako malý čtvereček. */
+.recipe-gallery-item .recipe-image,
+.recipe-gallery-item .recipe-image.large {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 0;
+  background: transparent;
 }

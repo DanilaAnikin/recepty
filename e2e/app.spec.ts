@@ -153,9 +153,35 @@ test.describe("Nákupní seznam", () => {
 });
 
 test.describe("Plánovač", () => {
-  test("ukazuje sedm dní", async ({ page }) => {
+  test("ukazuje celý týden na širokém displeji a jeden den na mobilu", async ({ page }, testInfo) => {
     await openApp(page, "/?tab=plan");
-    await expect(page.locator(".planner-day")).toHaveCount(7);
+
+    if (testInfo.project.name === "mobile") {
+      // Sedm karet pod sebou je na telefonu sedm obrazovek rolování, proto
+      // se ukazuje vybraný den a nahoře je pruh s dny.
+      await expect(page.locator(".planner-day")).toHaveCount(1);
+      await expect(page.locator(".day-strip-button")).toHaveCount(7);
+    } else {
+      await expect(page.locator(".planner-day")).toHaveCount(7);
+      await expect(page.locator(".day-strip")).toHaveCount(0);
+    }
+  });
+
+  test("na mobilu jde přepnout den v pruhu", async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== "mobile", "Pruh dnů je jen pro úzké displeje.");
+
+    await openApp(page, "/?tab=plan");
+    const heading = page.locator(".planner-day-header strong");
+    const before = await heading.textContent();
+
+    // Vybere den, který určitě není ten právě zobrazený.
+    const strip = page.locator(".day-strip-button");
+    const activeIndex = await page.locator(".day-strip-button.active").evaluate((el) =>
+      Array.from(el.parentElement?.children ?? []).indexOf(el),
+    );
+    await strip.nth((activeIndex + 3) % 7).click();
+
+    await expect(heading).not.toHaveText(before ?? "");
   });
 
   test("naplánuje jídlo a jde ho vzít zpět", async ({ page }) => {
@@ -302,5 +328,54 @@ test.describe("Rozvržení", () => {
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );
     expect(overflow).toBeLessThanOrEqual(1);
+  });
+
+  // Na úzkých displejích se tlačítka v hlavičce zalamovala, tlačítko motivu
+  // skončilo vlevo a jeho nabídka (kotvená vpravo) vyjela mimo obrazovku.
+  for (const width of [320, 360, 390, 412]) {
+    test(`nabídka motivu se vejde na obrazovku (${width} px)`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await openApp(page);
+
+      await page.locator('button[aria-label^="Motiv"]').click();
+      const panel = page.locator(".theme-menu-panel");
+      await expect(panel).toBeVisible();
+
+      const box = (await panel.boundingBox())!;
+      expect(box.x).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width).toBeLessThanOrEqual(width + 1);
+    });
+
+    test(`panel filtrů se vejde na obrazovku (${width} px)`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await openApp(page);
+
+      await page.getByRole("button", { name: /Filtry/ }).click();
+      const drawer = page.locator(".filter-drawer");
+      await expect(drawer).toBeVisible();
+
+      const box = (await drawer.boundingBox())!;
+      expect(box.x).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width).toBeLessThanOrEqual(width + 1);
+
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      );
+      expect(overflow).toBeLessThanOrEqual(1);
+    });
+  }
+
+  test("hlavička se na úzkém displeji nezalomí do dvou řádků", async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 800 });
+    await openApp(page);
+
+    // Logo i tlačítka musí zůstat na jednom řádku — právě zalomení posílalo
+    // nabídku motivu mimo obrazovku.
+    const sameRow = await page.evaluate(() => {
+      const logo = document.querySelector(".hero-logo")!.getBoundingClientRect();
+      const actions = document.querySelector(".hero-actions")!.getBoundingClientRect();
+      return actions.top < logo.bottom && logo.top < actions.bottom;
+    });
+    expect(sameRow).toBe(true);
   });
 });

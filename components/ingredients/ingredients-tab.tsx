@@ -251,7 +251,9 @@ export function IngredientsTab() {
           <VirtualList
             items={rows}
             rowHeight={(row) => (row.kind === "header" ? HEADER_ROW_HEIGHT : ITEM_ROW_HEIGHT)}
-            maxHeight={640}
+            // Na telefonu musí seznam skončit nad spodní navigací, jinak by
+            // vznikly dvě rolovací plochy nad sebou a stránka by "klouzala".
+            maxHeight="min(640px, calc(100dvh - 320px))"
             renderRow={(row) =>
               row.kind === "header" ? (
                 <h3 className="ingredient-letter">{row.letter}</h3>

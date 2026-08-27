@@ -174,12 +174,16 @@ function AppShell() {
           <div className="hero-topline">
             <div className="hero-branding">
               <span className="hero-kicker">Domácí kuchařka pro každý den</span>
+              {/* Rozměry musí sedět se skutečným souborem (669×373). Dřív tu
+                  bylo 455×110, což je jiný poměr stran — `height: auto` pak
+                  počítalo výšku z jiného poměru a logo bylo dvakrát vyšší,
+                  než mělo být. */}
               <Image
                 src="/branding/logo_wordmark.png"
                 alt="Recepty Terinky"
                 className="hero-logo"
-                width={455}
-                height={110}
+                width={669}
+                height={373}
                 priority
               />
             </div>

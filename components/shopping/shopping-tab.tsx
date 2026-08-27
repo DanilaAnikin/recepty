@@ -137,7 +137,9 @@ export function ShoppingTab({ onOpenPlanner }: { onOpenPlanner: () => void }) {
           ) : null}
         </div>
 
-        <div className="toolbar-wrap">
+        {/* Na mobilu se z téhle řádky stává vodorovný pruh akčních chipů:
+            v obchodě má být vidět seznam, ne tři řádky tlačítek. */}
+        <div className="toolbar-wrap action-scroller">
           <button type="button" className="secondary-button" onClick={handleAddFromPlan}>
             <CalendarRange size={16} aria-hidden="true" />
             Z plánu na tento týden

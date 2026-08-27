@@ -171,7 +171,9 @@ export function RecipeDetail({
         bodyClassName="printable-recipe"
         footer={
           <>
-            <button type="button" className="secondary-button" onClick={onClose}>
+            {/* Na mobilu se skrývá: sheet zavře křížek v hlavičce i systémové
+                Zpět, takže by tlačítko jen ubíralo místo hlavní akci. */}
+            <button type="button" className="secondary-button redundant-close" onClick={onClose}>
               Zavřít
             </button>
             <button type="button" className="secondary-button" onClick={onEdit}>
@@ -244,7 +246,7 @@ export function RecipeDetail({
                 </div>
               ) : null}
 
-              <div className="toolbar-wrap no-print">
+              <div className="toolbar-wrap detail-actions no-print">
                 <button type="button" className="secondary-button" onClick={() => setCookLogOpen(true)}>
                   <Plus size={16} aria-hidden="true" />
                   Zapsat vaření
@@ -272,6 +274,7 @@ export function RecipeDetail({
                       ? "secondary-button favorite-button active"
                       : "secondary-button favorite-button"
                   }
+                  aria-pressed={recipe.isFavorite === true}
                   onClick={() =>
                     commit(
                       (current) => mutations.toggleRecipeFavorite(current, recipe.id),
@@ -284,12 +287,12 @@ export function RecipeDetail({
                   ) : (
                     <HeartOff size={16} aria-hidden="true" />
                   )}
-                  {recipe.isFavorite ? "V oblíbených" : "Do oblíbených"}
+                  Oblíbené
                 </button>
               </div>
             </div>
 
-            <RecipeImage source={heroImage} alt={recipe.title} large />
+            {heroImage ? <RecipeImage source={heroImage} alt={recipe.title} large /> : null}
           </section>
 
           {galleryImages.length > 0 ? (

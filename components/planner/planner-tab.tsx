@@ -20,12 +20,15 @@ import {
   plannedRecipesInRange,
   shortDateLabel,
   slotLabel,
+  fromDateKey,
   startOfWeek,
   toDateKey,
   weekdayLabel,
+  weekdayShortLabel,
 } from "@/lib/planner";
 import { buildShoppingItems } from "@/lib/shopping";
 import { useAppState } from "@/components/app/app-state";
+import { useMediaQuery } from "@/components/app/use-media-query";
 import { useToast } from "@/components/app/toast";
 import { Modal } from "@/components/ui/modal";
 import { ConfirmDialog } from "@/components/ui/primitives";
@@ -45,6 +48,15 @@ export function PlannerTab({ onOpenRecipe }: { onOpenRecipe: (recipeId: number) 
   const [picker, setPicker] = useState<{ date: string; slot: MealSlot } | null>(null);
   const [confirmClear, setConfirmClear] = useState(false);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
+  /**
+   * Vybraný den pro mobilní zobrazení.
+   *
+   * Sedm karet pod sebou znamená na telefonu sedm obrazovek rolování, z toho
+   * většina prázdných slotů. Na mobilu se proto ukazuje jeden den a nahoře
+   * je pruh s dny; na širších displejích zůstává celý týden vedle sebe.
+   */
+  const [selectedDayIndex, setSelectedDayIndex] = useState<number | null>(null);
+  const isNarrow = useMediaQuery("(max-width: 820px)");
 
   const pantryIds = useMemo(() => pantryIdSet(state.pantry), [state.pantry]);
   const recipesById = useMemo(
@@ -57,6 +69,11 @@ export function PlannerTab({ onOpenRecipe }: { onOpenRecipe: (recipeId: number) 
 
   const fromKey = toDateKey(weekStart);
   const toKey = toDateKey(addDays(weekStart, 6));
+
+  // Výchozí den je dnešek, pokud je v zobrazeném týdnu; jinak pondělí.
+  const todayIndex = week.findIndex((day) => day.isToday);
+  const activeDayIndex = selectedDayIndex ?? (todayIndex === -1 ? 0 : todayIndex);
+  const visibleDays = isNarrow ? [week[Math.min(activeDayIndex, week.length - 1)]] : week;
 
   const handleGenerateShoppingList = () => {
     const planned = plannedRecipesInRange(state.mealPlan, state.recipes, fromKey, toKey);
@@ -157,8 +174,38 @@ export function PlannerTab({ onOpenRecipe }: { onOpenRecipe: (recipeId: number) 
         </div>
       </div>
 
+      {isNarrow ? (
+        <div className="day-strip" role="tablist" aria-label="Dny v týdnu">
+          {week.map((day, index) => {
+            const active = index === activeDayIndex;
+            return (
+              <button
+                key={day.date}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                className={
+                  active
+                    ? "day-strip-button active"
+                    : day.isToday
+                      ? "day-strip-button today"
+                      : "day-strip-button"
+                }
+                onClick={() => setSelectedDayIndex(index)}
+              >
+                <span className="day-strip-name">{weekdayShortLabel(day.date)}</span>
+                <span className="day-strip-date">{fromDateKey(day.date).getDate()}.</span>
+                {day.entries.length > 0 ? (
+                  <span className="day-strip-dot" aria-label={`${day.entries.length} jídel`} />
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+
       <div className="planner-grid">
-        {week.map((day) => (
+        {visibleDays.map((day) => (
           <div
             key={day.date}
             className={day.isToday ? "planner-day today" : "planner-day"}
@@ -241,7 +288,7 @@ export function PlannerTab({ onOpenRecipe }: { onOpenRecipe: (recipeId: number) 
         ))}
       </div>
 
-      <div className="panel-card">
+      <div className="panel-card planner-drag-source-card">
         <div className="section-header">
           <h3>Recepty k přetažení</h3>
           <span className="muted-copy small">
