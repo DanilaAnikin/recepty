@@ -128,7 +128,10 @@ zůstává pod tagem `flutter-legacy-archive`.
 - Lint: `npm run lint` · Typy: `npm run typecheck`
 - Testy logiky: `npm test` (vitest) / `npm run test:watch`
 - E2E: `npm run build && npm run test:e2e` (Playwright, desktop + mobil)
-- Deploy: push na main, Vercel autodetekuje Next.js
+- Deploy: **push nestačí.** Ostrý web je self-hosted Next.js za Cloudflare
+  (hlavičky `x-nextjs-cache`, žádné `x-vercel-id`), takže se musí ručně
+  přestavět obraz a restartovat kontejner — viz README. Ověření zvenčí:
+  `curl -s https://recepty.anikin.cz/ | grep -c hlavni-obsah` (0 = starý build).
 
 ## Co tu NENÍ
 

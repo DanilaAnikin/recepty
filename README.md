@@ -145,8 +145,32 @@ zařízení i server, aplikace ukáže obě verze a nechá rozhodnout uživatele
 
 ## Nasazení
 
-**Vercel** — pushni repo, framework se autodetekuje jako Next.js, Node `22.x`.
-Vlastní build command ani output directory nejsou potřeba.
+**Push na `main` sám o sobě nic nenasadí.** Ostrý web běží jako self-hosted
+Next.js za Cloudflare (odpovídá hlavičkami `x-nextjs-cache` a `x-powered-by`,
+ne `x-vercel-id`), takže se po pushi musí ručně přestavět obraz a restartovat
+kontejner:
 
-**Docker / vlastní server** — `Dockerfile` v rootu staví `output: standalone`.
-Pro synchronizaci připoj svazek na `SYNC_DATA_DIR`.
+```bash
+git pull
+docker compose build --no-cache   # nebo: docker build -t recepty .
+docker compose up -d
+```
+
+Že běží nová verze, se pozná podle čtyř záložek v hlavičce (Recepty,
+Ingredience, Nákup, Plán). Rychlá kontrola zvenčí:
+
+```bash
+curl -s https://recepty.anikin.cz/ | grep -c hlavni-obsah   # 0 = starý build
+```
+
+`Dockerfile` v rootu staví `output: standalone`. Pro synchronizaci mezi
+zařízeními připoj svazek na cestu z `SYNC_DATA_DIR` (jinak data zmizí
+s restartem kontejneru).
+
+**Cloudflare**: HTML se posílá s `s-maxage=31536000`. Když se po nasazení
+pořád ukazuje stará verze, je na řadě *Purge cache* v Cloudflare.
+
+**Vercel** by fungoval taky (framework se autodetekuje, Node `22.x`, žádný
+vlastní build command) — jen tam tenhle web zrovna neběží. Pozor, že na
+Vercelu je filesystém efemérní, takže by tam nefungovala synchronizace přes
+`/api/sync`.

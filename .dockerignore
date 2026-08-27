@@ -1,11 +1,17 @@
 node_modules
 .next
 .git
-.dart_tool
+.github
 build
-android
-ios
 npm-debug.log
 .env*
 Dockerfile
 .dockerignore
+
+# Výstupy e2e testů — do build kontextu nepatří a umí být velké.
+test-results
+playwright-report
+blob-report
+
+# Data lokální synchronizace (SYNC_DATA_DIR).
+.data
